@@ -1,0 +1,16 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Ini pola tabel untuk database Neon Anda
+model Transaction {
+  id Int @id @default(autoincrement())
+  title String
+  amount Float
+  type String
+  createAt DateTime @default(now())
+}

@@ -1,0 +1,18 @@
+tulis di command prompt VSCode
+
+rmdir /s /q node_modules && del package-lock.json pnpm-lock.yaml package.json 2>nul
+npm init -y
+
+npm config set cache "F:\npm-cache" --global
+
+// Opsional mending pake yang node --env-file dibawah!
+npm install -g dotenv-cli (install dotenv-cli)
+dotenv -e .env -- npx prisma db push (push lewat dotenv)
+
+node --env-file=.env -e "const { execSync } = require('child_process'); execSync('npx prisma db push --url=' + process.env.DATABASE_URL, { stdio: 'inherit' });"
+
+
+mengintas tool TS (Type Script untuk Backend)
+npm install -D typescript ts-node @types/node @types/express @types/cors
+Huruf -D artinya kita menginstal ini hanya untuk alat bantu saat coding (Development).@types/... 
+adalah paket khusus yang memberikan VS Code "buku panduan" tentang isi perintah Express dan Cors, agar fitur anti-typo bisa bekerja dengan maksimal.
