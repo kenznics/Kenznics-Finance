@@ -1,0 +1,5 @@
+menginstall paket Tailwind
+npm install -D tailwindcss@3 postcss autoprefixer
+
+Generate file config Tailwind
+npx tailwindcss init -p
