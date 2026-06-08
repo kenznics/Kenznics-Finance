@@ -1,12 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card }  from  './components/Card';
 import { Navbar }  from './components/Navbar';
 import { ModalTransaction } from './components/ModalTransaction';
+
+// Struktur interface Transaksi
+interface Transaction {
+  id: number;
+  title: string;
+  amount: number;
+  type: 'INCOME' | 'EXPENSE';
+  createdAt: string;
+}
 
 function App() {
   const [angka, setAngka] = useState<number>(0);
   // Buat state khusus untuk mengatur apakah modal terbuka atau tidak, dengan tipe data boolean
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/transactions', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MDkwODA4MCwiZXhwIjoxNzgwOTk0NDgwfQ.B_X2ck3ycGYSteXBuAAsF6h4OqcllmZ4oxSEfYjU-nE'
+        }
+      });
+      if (response.ok) {
+        const resJSON = await response.json();
+        // Jika Backend membungkus dalam satu objek ambil resJSON.data
+        // Jika backend langsung mengirim array , biarkan resJSON
+        setTransactions(resJSON.data || resJSON);
+      }
+    } catch (error) {
+      console.error('Error saat mengambil transaksi:', error);
+    }
+  };
+  
+  // Menjalankan fungsi fetchTransactions sekali saat komponen pertama kali dimuat 
+  useEffect(() => {
+    const iniFetch = async () => {
+      await fetchTransactions();
+    };
+    iniFetch();
+  }, []); // Pastikan array dependency kosong agar hanya jalan sekali saat mount
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center gap-6">
@@ -15,8 +52,8 @@ function App() {
       {/* Memanggil Variable angka langsung di dalam HTML menggunakan kurung kurawal */}   
     <main className="p-6 w-full max-w-4xl flex flex-col gap-6 items-center justify-center mt-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-        <Card title="Total Pemasukkan" amount="Rp 5.000.000" bgColor="bg-green-200 border-green-300" /> 
-        <Card title="Total Pengeluaran" amount="Rp 2.500.000" bgColor="bg-red-200 border-red-300" /> 
+        <Card title="Total Pemasukkan" amount={`Ada ${transactions.length} Data`} bgColor="bg-green-200 border-green-300" /> 
+        <Card title="Total Pengeluaran" amount="" bgColor="bg-red-200 border-red-300" /> 
       </div>
 
       {/* Membuat kotak biru Tombol Pemicu Modal */}
@@ -45,6 +82,7 @@ function App() {
 
       <ModalTransaction isOpen={isModalOpen} 
       onClose={() => setIsModalOpen(false)} 
+      onFetch={fetchTransactions} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
       />
 
     </div>

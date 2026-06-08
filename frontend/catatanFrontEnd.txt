@@ -19,6 +19,6 @@ npm uninstall tailwindcss postcss autoprefixer
 npm install -D tailwindcss@3 postcss autoprefixer
 
 # 3. Sekarang jalankan ulang perintah inisialisasi konfigurasi
-npx tailwindcss init -p
+npx tailwindcss init -pa
 
 (Gunakan 2 extensi ini Tailwind CSS Intellisense dan inline HTML)

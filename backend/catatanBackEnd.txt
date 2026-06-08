@@ -1,0 +1,35 @@
+tulis di command prompt VSCode
+
+rmdir /s /q node_modules && del package-lock.json pnpm-lock.yaml package.json 2>nul
+npm init -y
+
+npm config set cache "F:\npm-cache" --global
+
+# Opsional mending pake yang node --env-file dibawah!
+npm install -g dotenv-cli (install dotenv-cli) 
+
+# Gunakan npx agar yang dipanggil adalah library Node.js, bukan Python!
+npx dotenv-cli -e .env -- npx prisma db push (push lewat dotenv)
+
+node --env-file=.env -e "const { execSync } = require('child_process'); execSync('npx prisma db push --url=' + process.env.DATABASE_URL, { stdio: 'inherit' });"
+
+
+mengintas tool TS (Type Script untuk Backend)
+npm install -D typescript ts-node @types/node @types/express @types/cors
+Huruf -D artinya kita menginstal ini hanya untuk alat bantu saat coding (Development).@types/... 
+adalah paket khusus yang memberikan VS Code "buku panduan" tentang isi perintah Express dan Cors, agar fitur anti-typo bisa bekerja dengan maksimal.
+
+Installasi Tipe data (types) untuk TypeScript dari library bcrypt
+npm install bcrypt && npm install -D @types/bcrypt
+
+Catatan Untuk Prisma
+# 1. Kirim tabel User baru ini ke database Neon cloud kamu
+npx prisma db push
+
+# 2. Perbarui tipe data lokal agar VS Code tahu sekarang sudah ada properti 'prisma.user'
+npx prisma generate
+
+# Instalasi Library biasa
+npm i --save-dev @types/jsonwebtoken
+npm i jsonwebtoken
+

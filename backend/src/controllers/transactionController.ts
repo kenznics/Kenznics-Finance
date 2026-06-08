@@ -10,10 +10,19 @@ const prisma =  new PrismaClient({ adapter: adapter });
 
 const getTransactions = async (req: Request , res: Response): Promise<void> => {
     try {
-        const allTransactions = await prisma.transaction.findMany();
-        res.status(200).json(allTransactions);
+        const userId = (req as any).userId;
+
+        const transactions = await prisma.transaction.findMany({
+            where: {
+                userId: userId
+            }
+        });
+
+        // Agar Data terkirim ke Hoppscotch
+        res.status(200).json({ status: "Succes", data: transactions });
+
     } catch (error) {
-        res.status(500).json({ message: "Gagal mengambil data" });
+        res.status(500).json({ message: "Gagal mengambil data transaksi!", error});
     }
 };
 
@@ -21,16 +30,21 @@ const getTransactions = async (req: Request , res: Response): Promise<void> => {
 const createTransaction = async (req: Request, res: Response): Promise<void> => {
     //ambil data yang dikirim user input lewat body
     const { title, amount, type } = req.body;
-    try {
-        // Simpan ke database menggunakan prisma
-        const newTransaction = await prisma.transaction.create({
-            data: { title, amount, type }
-        });
-        // Berikan response sukses ke user
-        res.status(201).json({ status: "Succes", data: newTransaction });
-    } catch (error) {
-        res.status(500).json({ message: "Gagal menyimpan transaksi" });
+    const userId = (req as any).userId;
+
+    if (!userId) {
+        res.status(401).json({ message: 'Akses ditolak , ID user tidak valid!' });
+        return;
     }
+
+    const newTransaction = await prisma.transaction.create({
+        data: {
+            title: title,
+            amount: amount,
+            type: type,
+            userId: userId
+        }
+    });
 };
 
 // Fungsi untuk menghapus transaksi berdasarkan ID
