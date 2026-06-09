@@ -3,3 +3,9 @@ npm install -D tailwindcss@3 postcss autoprefixer
 
 Generate file config Tailwind
 npx tailwindcss init -p
+
+Library Zod dan React Hook Form
+npm install react-hook-form @hookform/resolvers zod
+
+Notifikasi Library
+npm install react-hot-toast

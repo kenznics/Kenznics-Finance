@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card }  from  './components/Card';
 import { Navbar }  from './components/Navbar';
 import { ModalTransaction } from './components/ModalTransaction';
+import { Toaster } from 'react-hot-toast'
 
 // Struktur interface Transaksi
 interface Transaction {
@@ -13,7 +14,6 @@ interface Transaction {
 }
 
 function App() {
-  const [angka, setAngka] = useState<number>(0);
   // Buat state khusus untuk mengatur apakah modal terbuka atau tidak, dengan tipe data boolean
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
@@ -26,11 +26,22 @@ function App() {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MDkwODA4MCwiZXhwIjoxNzgwOTk0NDgwfQ.B_X2ck3ycGYSteXBuAAsF6h4OqcllmZ4oxSEfYjU-nE'
         }
       });
+
       if (response.ok) {
         const resJSON = await response.json();
         // Jika Backend membungkus dalam satu objek ambil resJSON.data
         // Jika backend langsung mengirim array , biarkan resJSON
-        setTransactions(resJSON.data || resJSON);
+        //setTransactions(resJSON.data || resJSON);
+        console.log("Data Mentah dari BackEnd:", resJSON);
+
+        // Membuat Array baru eksplisit agar React wajib merender ulang
+        const dataBaru = resJSON.data || resJSON;
+
+        if (Array.isArray(dataBaru)) {
+          setTransactions(dataBaru);
+        } else {
+          console.error('Data yang diterima bukan array:', dataBaru);
+        }
       }
     } catch (error) {
       console.error('Error saat mengambil transaksi:', error);
@@ -45,19 +56,29 @@ function App() {
     iniFetch();
   }, []); // Pastikan array dependency kosong agar hanya jalan sekali saat mount
 
+  const incomeTransaction = transactions.filter((item) => item.type === 'INCOME');
+  const expenseTransaction = transactions.filter((item) => item.type === 'EXPENSE');
+
+  const totalIncome = incomeTransaction.reduce((acc, item) => acc + item.amount, 0);
+  const totalExpense = expenseTransaction.reduce((acc, item) => acc + item.amount, 0);
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center gap-6">
         {/* Memasang Navabar diatas */}
+
+        {/* Toaster Notifikasi */}
+        <Toaster position="top-right" reverseOrder={false} />
+
       <Navbar />
       {/* Memanggil Variable angka langsung di dalam HTML menggunakan kurung kurawal */}   
     <main className="p-6 w-full max-w-4xl flex flex-col gap-6 items-center justify-center mt-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-        <Card title="Total Pemasukkan" amount={`Ada ${transactions.length} Data`} bgColor="bg-green-200 border-green-300" /> 
-        <Card title="Total Pengeluaran" amount="" bgColor="bg-red-200 border-red-300" /> 
+        <Card title="Total Pemasukkan" amount={`Rp ${totalIncome.toLocaleString('id-ID')}`} bgColor="bg-green-200 border-green-300" /> 
+        <Card title="Total Pengeluaran" amount={`Rp ${totalExpense.toLocaleString('id-ID')}`} bgColor="bg-red-200 border-red-300" /> 
       </div>
 
       {/* Membuat kotak biru Tombol Pemicu Modal */}
-      <div className="bg-blue-600 text-white p-6 rounded-x1 shadow-md text-center w-full max-w-2xl">
+      <div className="bg-blue-600 text-white p-6 rounded-xl shadow-md text-center w-full max-w-2xl">
         <div>
           <h2 className="text-2xl font-bold">Halo Full-Stack Developer</h2>
           <p className="mt-2 text-blue-100 text-sm">Klik tombol ini untuk meguji State Modal React.</p>
@@ -67,18 +88,7 @@ function App() {
           + Tambah Transaksi
         </button>
       </div>
-
-    <p className="text-gray-700 text-lg">
-      Status Gerbang Modal Saat ini: <span className="font-bold text-gray-900">{isModalOpen ? 'Terbuka' : 'Tertutup'}</span>
-    </p>
     </main>
-
-        <div className="mt-4 flex flex-col items-center gap-1">
-        <p className="text-sm text-gray-500 font-medium">Total Klik Penghitung: {angka}</p>
-        <button onClick={() => setAngka(angka + 1)} className="px-3 py-1 bg-gray-200 text-xs font-bold rounded-lg text-gray-700">
-          Tes useState Angka 
-        </button>
-      </div>
 
       <ModalTransaction isOpen={isModalOpen} 
       onClose={() => setIsModalOpen(false)} 
