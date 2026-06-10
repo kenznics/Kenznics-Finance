@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { toast} from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const transactionSchema = z.object({
     title: z.string().min(3, { message: "Judul minimal harus 3 karakter" }),
@@ -24,33 +24,47 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
     });
 
     const onSubmit = async (data: z.infer<typeof transactionSchema>) => {
-
         try {
+            setIsLoading(true); // Loading di awal block try
+            console.log("Mengirim data:", data);
+
             // 1. Kirim data ke API backend Express
             const response = await fetch('http://localhost:3000/api/transactions', {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MDkwODA4MCwiZXhwIjoxNzgwOTk0NDgwfQ.B_X2ck3ycGYSteXBuAAsF6h4OqcllmZ4oxSEfYjU-nE'
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MTA4NTYwMiwiZXhwIjoxNzgxMTcyMDAyfQ.vFI6NZ3afJF-1TCMHpExxAMb0hLYJvE7eA7qevxg7YM'
         },
         body: JSON.stringify(data)
     });
 
+    console.log("Response Status:", response.status, response.ok);
+
     // Cek response backend
     if (response.ok) {
+        console.log("Sukses!");
         // Alert Toast Sukses
         toast.success('Transaksi berhasil disimpan!', {
             duration: 4000,
-            icon: ':rocket:',
+            icon: '🚀',
         });
-
         onFetch();
-        reset(); // Mengosongkan form React Hook otomatis
-         // Panggil fungsi fetchTransactions dari App.tsx untuk refresh data transaksi
-        onClose(); // Tutup modal jika gagal
-
+        reset({
+            title: "",
+            amount: undefined,
+            type: "INCOME"
+        }); // Mengosongkan form React Hook otomatis
+        onClose(); // Panggil fungsi fetchTransactions dari App.tsx untuk refresh data transaksi
     } else {
-        alert('Transaksi gagal disimpan!');
+        console.log("Gagal dengan status:", response.status);
+        try {
+        const error = await response.json();
+        console.log("Eror dari server:", error);
+        toast.error(error.message || 'Transaksi gagal disimpan!');
+        } catch (parseError) {
+            console.error("Tidak bisa parse Response sebagai JSON:", parseError);
+            toast.error(`Error ${response.status}: ${response.statusText}`);
+        }
     }
         } catch (error) {
             console.error('Error saat menyimpan transaksi:', error);
@@ -58,6 +72,7 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
             toast.error('Gagal terhubung ke server!');
         } finally {
             setIsLoading(false);
+            console.log("Loading Selesai");
         }
     };
 

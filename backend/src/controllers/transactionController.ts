@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
-import { PrismaPg } from'@prisma/adapter-pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import 'dotenv/config';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
-const prisma =  new PrismaClient({ adapter: adapter });
+const prisma = new PrismaClient({ adapter: adapter });
 
-const getTransactions = async (req: Request , res: Response): Promise<void> => {
+const getTransactions = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = (req as any).userId;
 
@@ -22,29 +22,41 @@ const getTransactions = async (req: Request , res: Response): Promise<void> => {
         res.status(200).json({ status: "Succes", data: transactions });
 
     } catch (error) {
-        res.status(500).json({ message: "Gagal mengambil data transaksi!", error});
+        res.status(500).json({ message: "Gagal mengambil data transaksi!", error });
     }
 };
 
 // Fungsi untuk membuat transaksi baru
 const createTransaction = async (req: Request, res: Response): Promise<void> => {
-    //ambil data yang dikirim user input lewat body
     const { title, amount, type } = req.body;
     const userId = (req as any).userId;
 
     if (!userId) {
-        res.status(401).json({ message: 'Akses ditolak , ID user tidak valid!' });
+        res.status(401).json({ message: 'Akses ditolak, ID user tidak valid' });
         return;
     }
+    try {
+        const newTransaction = await prisma.transaction.create({
+            data: {
+                title: title,
+                amount: amount,
+                type: type,
+                userId: userId
+            }
+        });
 
-    const newTransaction = await prisma.transaction.create({
-        data: {
-            title: title,
-            amount: amount,
-            type: type,
-            userId: userId
-        }
-    });
+        res.status(201).json({
+            status: "Success",
+            message: "Transaksi berhasil disimpan",
+            data: newTransaction
+        });
+    } catch (error) {
+        console.error("Database Error:", error);
+        res.status(500).json({
+            message: "Gagal menyimpan transaksi!",
+            error: error instanceof Error ? error.message : "Error tidak diketahui!"
+        });
+    }
 };
 
 // Fungsi untuk menghapus transaksi berdasarkan ID

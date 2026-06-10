@@ -9,3 +9,5 @@ npm install react-hook-form @hookform/resolvers zod
 
 Notifikasi Library
 npm install react-hot-toast
+
+Instalasi Library routing TypeScript
