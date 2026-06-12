@@ -23,7 +23,7 @@ function Dashboard() {
     try {
       const response = await fetch('http://localhost:3000/api/transactions', {
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MTE3MjM3MywiZXhwIjoxNzgxMjU4NzczfQ.qY5istiP-EVElfRe99k6jQ1Jxxeg4IKs8HSI8q_Y3Bo'
+          'Authorization': `Bearer ${import.meta.env.VITE_DEV_TOKEN}`
         }
       });
 
@@ -94,9 +94,13 @@ function Dashboard() {
 
     {/* Toaster Notifikasi */}
     <Toaster 
-        position="top-right" 
+        position="top-center" 
         reverseOrder={false}
-        containerStyle={{ zIndex: 9999 }} 
+        containerStyle={{ zIndex: 9999 }}
+        toastOptions={{
+          // Durasi Popup toaster
+          duration: 2000
+        }} 
     />
     </div>
   );

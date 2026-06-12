@@ -6,7 +6,7 @@ interface Transaction {
     title: string;
     amount: number;
     type: 'INCOME' | 'EXPENSE';
-    createdAt: string;
+    createAt: string;
 }
 
 function History() {
@@ -17,7 +17,7 @@ function History() {
         try {
             const response = await fetch('http://localhost:3000/api/transactions', {
                 headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImlhdCI6MTc4MTE3MjM3MywiZXhwIjoxNzgxMjU4NzczfQ.qY5istiP-EVElfRe99k6jQ1Jxxeg4IKs8HSI8q_Y3Bo'
+                    'Authorization': `Bearer ${import.meta.env.VITE_DEV_TOKEN}`
                 }
             });
 
@@ -67,10 +67,81 @@ function History() {
 
                 {/* Kotak Border wadah */}
                 <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-center items-center min-h-[200px]">
-                    {/* Mapping transaksi */}
-                    <p className="text-sm text-slate-400 italic text-center">
-                        Daftar Transaksi
-                    </p>
+
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full text-left border-collapse">
+
+
+                            {/* Header Table*/}
+                            <thead>
+                                <tr className="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider border-b border-slate-200">
+                                    <th className="py-4 px-6 font-semibold">Judul Transaksi</th>
+                                    <th className="py-4 px-6 font-semibold">Tipe</th>
+                                    <th className="py-4 px-6 font-semibold text-center">Jumlah</th>
+                                    <th className="py-4 px-6 font-semibold text-right">Waktu</th>
+                                </tr>
+                            </thead>
+
+                            {/* Body Data Dumy statis */}
+                            <tbody className="text-slate-600 divide-y divide-slate-100 text-sm">
+                                {transactions.map((item) => {
+                                    return (
+                                        <tr key={item.id} className="hover:bg slate-50/80 transition-colors">
+                                            {/* Kolom Judul */}
+                                            <td className="py-4 px-6 font-medium text-slate-900">
+                                                {item.title}
+                                            </td>
+
+                                            {/* Kolom Conditional warna untuk tipe data */}
+                                            <td className="py-4 px-6">
+                                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.type === 'INCOME'
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                                    : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                                    }`}>
+                                                    {item.type}
+                                                </span>
+                                            </td>
+
+                                            {/* Kolom Tanda Warna angka dan Format uangnya */}
+                                            <td className={`py-4 px-6 text-right font-bold ${item.type === 'INCOME'
+                                                ? 'text-emerald-600'
+                                                : 'text-rose-600'
+                                                }`}>
+                                                {item.type === 'INCOME' ? '+ ' : '- '}
+                                                Rp {item.amount.toLocaleString('id-ID')}
+                                            </td>
+
+                                            {/* Kolom Waktu */}
+                                            <td className="py-4 px-6 text-right text-slate-400">
+                                                {(() => {
+                                                    // Jika Data kosong 
+                                                    if (!item.createAt) return "-";
+
+                                                    // Mengkonversi string menjadi objek Date
+                                                    const dateObj = new Date(item.createAt);
+
+                                                    // Periksa hasil apakah valid
+                                                    if (isNaN(dateObj.getTime())) {
+                                                        // Jika invalid Date , tampilkan string sebagai tek
+                                                        return item.createAt;
+                                                    }
+
+                                                    // Jika valid, format Indonesia
+                                                    return dateObj.toLocaleDateString('id-ID', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })
+                                                })()}
+                                            </td>
+
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
 
             </main>
