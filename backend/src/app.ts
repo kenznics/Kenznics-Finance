@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
-import TransactionRoutes from './routes/transactionRoutes';
 import authRoutes from './routes/authRoutes';
 
 // 1. KONFIGURASI DATABASE (Prisma 7 + Driver Adapter)

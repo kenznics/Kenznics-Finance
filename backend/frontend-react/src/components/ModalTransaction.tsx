@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/useAuth";
 
 const transactionSchema = z.object({
     title: z.string().min(3, { message: "Judul minimal harus 3 karakter" }),
@@ -23,6 +24,8 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
         resolver: zodResolver(transactionSchema),
     });
 
+    const { token } = useAuth();
+
     const onSubmit = async (data: z.infer<typeof transactionSchema>) => {
         try {
             setIsLoading(true); // Loading di awal block try
@@ -33,39 +36,39 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_DEV_TOKEN}`
-        },
-        body: JSON.stringify(data)
-    });
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
 
-    console.log("Response Status:", response.status, response.ok);
+            console.log("Response Status:", response.status, response.ok);
 
-    // Cek response backend
-    if (response.ok) {
-        console.log("Sukses!");
-        // Alert Toast Sukses
-        toast.success('Transaksi berhasil disimpan!', {
-            duration: 2000,
-            icon: '🚀',
-        });
-        onFetch();
-        reset({
-            title: "",
-            amount: undefined,
-            type: "INCOME"
-        }); // Mengosongkan form React Hook otomatis
-        onClose(); // Panggil fungsi fetchTransactions dari App.tsx untuk refresh data transaksi
-    } else {
-        console.log("Gagal dengan status:", response.status);
-        try {
-        const error = await response.json();
-        console.log("Eror dari server:", error);
-        toast.error(error.message || 'Transaksi gagal disimpan!');
-        } catch (parseError) {
-            console.error("Tidak bisa parse Response sebagai JSON:", parseError);
-            toast.error(`Error ${response.status}: ${response.statusText}`);
-        }
-    }
+            // Cek response backend
+            if (response.ok) {
+                console.log("Sukses!");
+                // Alert Toast Sukses
+                toast.success('Transaksi berhasil disimpan!', {
+                    duration: 2000,
+                    icon: '🚀',
+                });
+                onFetch();
+                reset({
+                    title: "",
+                    amount: undefined,
+                    type: "INCOME"
+                }); // Mengosongkan form React Hook otomatis
+                onClose(); // Panggil fungsi fetchTransactions dari App.tsx untuk refresh data transaksi
+            } else {
+                console.log("Gagal dengan status:", response.status);
+                try {
+                    const error = await response.json();
+                    console.log("Eror dari server:", error);
+                    toast.error(error.message || 'Transaksi gagal disimpan!');
+                } catch (parseError) {
+                    console.error("Tidak bisa parse Response sebagai JSON:", parseError);
+                    toast.error(`Error ${response.status}: ${response.statusText}`);
+                }
+            }
         } catch (error) {
             console.error('Error saat menyimpan transaksi:', error);
             // Toast Error koneksi/cors
@@ -129,18 +132,18 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
 
                     <div className="flex justify-end gap-3 mt-2">
                         {/* Saat tombol Batal diklik, jalankan fungsi onClose dari App.tsx */}
-                        <button 
-                        type="button" 
-                        onClick={onClose} 
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-colors">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={isLoading}
+                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition-colors">
                             Batal
                         </button>
 
-                        <button 
-                        type="submit"
-                        disabled={isLoading} 
-                        className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
                             {isLoading ? "Menyimpan..." : "Simpan"}
                         </button>
                     </div>

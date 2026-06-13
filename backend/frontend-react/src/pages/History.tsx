@@ -1,5 +1,5 @@
-import { Navbar } from '../components/Navbar';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/useAuth';
 
 interface Transaction {
     id: number;
@@ -12,12 +12,13 @@ interface Transaction {
 function History() {
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const { token } = useAuth();
 
     const fetchTransactions = async () => {
         try {
             const response = await fetch('http://localhost:3000/api/transactions', {
                 headers: {
-                    'Authorization': `Bearer ${import.meta.env.VITE_DEV_TOKEN}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -51,7 +52,6 @@ function History() {
     }, []); // Pastikan array dependency kosong agar hanya jalan sekali saat mount
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center gap-6">
-            <Navbar />
 
             <main className="p-6 w-full max-w-2xl flex flex-col gap-6 mt-10">
                 {/* Judul utama */}

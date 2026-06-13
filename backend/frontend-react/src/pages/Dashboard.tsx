@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Card }  from  '../components/Card';
-import { Navbar }  from '../components/Navbar';
+import { Card } from '../components/Card';
 import { ModalTransaction } from '../components/ModalTransaction';
 import { Toaster } from 'react-hot-toast'
+import { useAuth } from '../context/useAuth'
 
 // Struktur interface Transaksi
 interface Transaction {
@@ -19,11 +19,20 @@ function Dashboard() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
+  const { token } = useAuth();
+
   const fetchTransactions = async () => {
+
+    // Fungsi Pengaman untuk fungsi Fetch
+    if (!token) {
+      console.log("Fetch dibatasi karena token kosong!")
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:3000/api/transactions', {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_DEV_TOKEN}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -47,7 +56,7 @@ function Dashboard() {
       console.error('Error saat mengambil transaksi:', error);
     }
   };
-  
+
   // Menjalankan fungsi fetchTransactions sekali saat komponen pertama kali dimuat 
   useEffect(() => {
     const iniFetch = async () => {
@@ -64,44 +73,43 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center gap-6">
-        {/* Memasang Navabar diatas */}
+      {/* Memasang Navabar diatas */}
 
-      <Navbar />
-      {/* Memanggil Variable angka langsung di dalam HTML menggunakan kurung kurawal */}   
-    <main className="p-6 w-full max-w-4xl flex flex-col gap-6 items-center justify-center mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-        <Card title="Total Pemasukkan" amount={`Rp ${totalIncome.toLocaleString('id-ID')}`} bgColor="bg-green-200 border-green-300" /> 
-        <Card title="Total Pengeluaran" amount={`Rp ${totalExpense.toLocaleString('id-ID')}`} bgColor="bg-red-200 border-red-300" /> 
-      </div>
-
-      {/* Membuat kotak biru Tombol Pemicu Modal */}
-      <div className="bg-blue-600 text-white p-6 rounded-xl shadow-md text-center w-full max-w-2xl">
-        <div>
-          <h2 className="text-2xl font-bold">Halo Full-Stack Developer</h2>
-          <p className="mt-2 text-blue-100 text-sm">Klik tombol ini untuk meguji State Modal React.</p>
+      {/* Memanggil Variable angka langsung di dalam HTML menggunakan kurung kurawal */}
+      <main className="p-6 w-full max-w-4xl flex flex-col gap-6 items-center justify-center mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+          <Card title="Total Pemasukkan" amount={`Rp ${totalIncome.toLocaleString('id-ID')}`} bgColor="bg-green-200 border-green-300" />
+          <Card title="Total Pengeluaran" amount={`Rp ${totalExpense.toLocaleString('id-ID')}`} bgColor="bg-red-200 border-red-300" />
         </div>
-        <button onClick={() => setIsModalOpen(true)} 
-        className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-x1 shadow hover:bg-blue-50 transition-colors mt-4">
-          + Tambah Transaksi
-        </button>
-      </div>
-    </main>
 
-      <ModalTransaction isOpen={isModalOpen} 
-      onClose={() => setIsModalOpen(false)} 
-      onFetch={fetchTransactions} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
+        {/* Membuat kotak biru Tombol Pemicu Modal */}
+        <div className="bg-blue-600 text-white p-6 rounded-xl shadow-md text-center w-full max-w-2xl">
+          <div>
+            <h2 className="text-2xl font-bold">Halo Full-Stack Developer</h2>
+            <p className="mt-2 text-blue-100 text-sm">Klik tombol ini untuk meguji State Modal React.</p>
+          </div>
+          <button onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-x1 shadow hover:bg-blue-50 transition-colors mt-4">
+            + Tambah Transaksi
+          </button>
+        </div>
+      </main>
+
+      <ModalTransaction isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onFetch={fetchTransactions} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
       />
 
-    {/* Toaster Notifikasi */}
-    <Toaster 
-        position="top-center" 
+      {/* Toaster Notifikasi */}
+      <Toaster
+        position="top-center"
         reverseOrder={false}
         containerStyle={{ zIndex: 9999 }}
         toastOptions={{
           // Durasi Popup toaster
           duration: 2000
-        }} 
-    />
+        }}
+      />
     </div>
   );
 }
