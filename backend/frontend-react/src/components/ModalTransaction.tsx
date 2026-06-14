@@ -5,11 +5,14 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/useAuth";
 
+// Definisi aturan validasi transaksi Zod
 const transactionSchema = z.object({
-    title: z.string().min(3, { message: "Judul minimal harus 3 karakter" }),
-    amount: z.number().min(1, { message: "Nominal uang tidak boleh kosong atau 0" }),
-    type: z.enum(["INCOME", "EXPENSE"]),
+    title: z.string().min(1, { message: "Judul minimal harus 3 karakter" }),
+    amount: z.number().positive({ message: "Jumlah harus lebih besar dari 0!" }),
+    type: z.enum(["INCOME", "EXPENSE"], { message: "Pilih Tipe INCOME atau EXPENSE!" }),
 });
+
+type TransactionFormInput = z.infer<typeof transactionSchema>;
 
 interface ModalProps {
     isOpen: boolean;
@@ -20,7 +23,7 @@ interface ModalProps {
 export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
     const [isLoading, setIsLoading] = useState(false); // State biar tombol tidak terklik double
 
-    const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset } = useForm({
+    const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset } = useForm<TransactionFormInput>({
         resolver: zodResolver(transactionSchema),
     });
 

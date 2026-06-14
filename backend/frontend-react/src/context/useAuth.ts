@@ -1,14 +1,5 @@
-import { createContext, useContext } from 'react';
-
-// Definisi tipe data 
-export interface AuthContextType {
-    token: string | null;
-    login: (newToken: string) => void;
-    logout: () => void;
-}
-
-// context murni
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 // Fungsi Hook
 export const useAuth = () => {

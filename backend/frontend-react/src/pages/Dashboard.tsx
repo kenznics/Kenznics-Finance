@@ -89,7 +89,7 @@ function Dashboard() {
             <p className="mt-2 text-blue-100 text-sm">Klik tombol ini untuk meguji State Modal React.</p>
           </div>
           <button onClick={() => setIsModalOpen(true)}
-            className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-x1 shadow hover:bg-blue-50 transition-colors mt-4">
+            className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-xl shadow hover:bg-blue-50 transition-colors mt-4">
             + Tambah Transaksi
           </button>
         </div>

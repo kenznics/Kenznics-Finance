@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import Login from './pages/Login';
-import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
 import { Navbar } from './components/Navbar';
 
@@ -25,9 +24,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-
     <BrowserRouter>
-      <AuthProvider>
         <Routes>
 
           <Route path="/login" element={<Login />} />
@@ -51,7 +48,6 @@ function App() {
           />
           
         </Routes>
-      </AuthProvider>
     </BrowserRouter>
 
   );
