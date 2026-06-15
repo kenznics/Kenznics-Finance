@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useAuth } from '../context/useAuth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface Transaction {
     id: number;
@@ -11,45 +11,45 @@ interface Transaction {
 
 function History() {
 
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const { token } = useAuth();
+    const queryClient = useQueryClient();
 
-    const fetchTransactions = async () => {
-        try {
+    const { data: transactions = [] } = useQuery<Transaction[]>({
+        queryKey: ['transactions', token], // Kunci unik cache data
+        queryFn: async () => {
+            if (!token) return[];
             const response = await fetch('http://localhost:3000/api/transactions', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) throw new Error('Gagal mengambil data');
+            const resJSON = await response.json();
+            return resJSON.data || resJSON; // Mengembalikan Arrary data
+        },
+        enabled: !!token,
+    });
+
+    const handleDelete = async (id: number) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/transactions/${id}`, {
+                method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
             if (response.ok) {
-                const resJSON = await response.json();
-                // Jika Backend membungkus dalam satu objek ambil resJSON.data
-                // Jika backend langsung mengirim array , biarkan resJSON
-                //setTransactions(resJSON.data || resJSON);
-                console.log("Data Mentah dari BackEnd:", resJSON);
-
-                // Membuat Array baru eksplisit agar React wajib merender ulang
-                const dataBaru = resJSON.data || resJSON;
-
-                if (Array.isArray(dataBaru)) {
-                    setTransactions(dataBaru);
-                } else {
-                    console.error('Data yang diterima bukan array:', dataBaru);
-                }
+                // Memicu re-fetch otomatis ke backend
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } else {
+                console.error('Gagal saat menghapus transaksi');
             }
         } catch (error) {
-            console.error('Error saat mengambil transaksi:', error);
+            console.error('Error saat menghapus transaksi:', error);
         }
     };
 
-    // Menjalankan fungsi fetchTransactions sekali saat komponen pertama kali dimuat 
-    useEffect(() => {
-        const iniFetch = async () => {
-            await fetchTransactions();
-        };
-        iniFetch();
-    }, []); // Pastikan array dependency kosong agar hanya jalan sekali saat mount
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center gap-6">
 
@@ -61,7 +61,7 @@ function History() {
                     </h1>
                     {/* Badge Jumlah data */}
                     <span className="inline-block mt-3 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
-                        Total: {transactions.length} Transaksi
+                        Total: { (transactions || []).length } Transaksi
                     </span>
                 </div>
 
@@ -79,12 +79,13 @@ function History() {
                                     <th className="py-4 px-6 font-semibold">Tipe</th>
                                     <th className="py-4 px-6 font-semibold text-center">Jumlah</th>
                                     <th className="py-4 px-6 font-semibold text-right">Waktu</th>
+                                    <th className="px-4 py-6 text-center">Aksi</th>
                                 </tr>
                             </thead>
 
                             {/* Body Data Dumy statis */}
                             <tbody className="text-slate-600 divide-y divide-slate-100 text-sm">
-                                {transactions.map((item) => {
+                                { (transactions || []).map((item) => {
                                     return (
                                         <tr key={item.id} className="hover:bg slate-50/80 transition-colors">
                                             {/* Kolom Judul */}
@@ -133,6 +134,16 @@ function History() {
                                                         year: 'numeric'
                                                     })
                                                 })()}
+                                            </td>
+
+                                            <td className="py-4 px-6 text-center text-slate-400">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="bg-rose-500 hover:bg-rose-500 text-white font-medium 
+                                                px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
+                                                    Hapus
+                                                </button>
                                             </td>
 
                                         </tr>

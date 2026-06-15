@@ -11,3 +11,6 @@ Notifikasi Library
 npm install react-hot-toast
 
 Instalasi Library routing TypeScript
+
+Instalasi Tenstack Query 15/06/2026
+npm install @tanstack/react-query

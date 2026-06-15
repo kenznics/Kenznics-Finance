@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
 import { Card } from '../components/Card';
 import { ModalTransaction } from '../components/ModalTransaction';
 import { Toaster } from 'react-hot-toast'
 import { useAuth } from '../context/useAuth'
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 // Struktur interface Transaksi
 interface Transaction {
@@ -17,53 +18,28 @@ function Dashboard() {
   // Buat state khusus untuk mengatur apakah modal terbuka atau tidak, dengan tipe data boolean
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
   const { token } = useAuth();
 
-  const fetchTransactions = async () => {
+  const queryClient = useQueryClient();
 
-    // Fungsi Pengaman untuk fungsi Fetch
-    if (!token) {
-      console.log("Fetch dibatasi karena token kosong!")
-      return;
-    }
-
-    try {
+  // TenStack Query 
+  const { data: transactions = [] } = useQuery<Transaction[]>({
+    queryKey: ['transactions', token], // Kunci unik cache data
+    queryFn: async () => {
+      if (!token) return [];
+      
       const response = await fetch('http://localhost:3000/api/transactions', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      if (!response.ok) throw new Error('Gagal mengambil data');
+      const resJSON = await response.json();
+      return resJSON.data || resJSON; // Mengembalikan Arrary data
+    },
+    enabled: !!token,
+  });
 
-      if (response.ok) {
-        const resJSON = await response.json();
-        // Jika Backend membungkus dalam satu objek ambil resJSON.data
-        // Jika backend langsung mengirim array , biarkan resJSON
-        //setTransactions(resJSON.data || resJSON);
-        console.log("Data Mentah dari BackEnd:", resJSON);
-
-        // Membuat Array baru eksplisit agar React wajib merender ulang
-        const dataBaru = resJSON.data || resJSON;
-
-        if (Array.isArray(dataBaru)) {
-          setTransactions(dataBaru);
-        } else {
-          console.error('Data yang diterima bukan array:', dataBaru);
-        }
-      }
-    } catch (error) {
-      console.error('Error saat mengambil transaksi:', error);
-    }
-  };
-
-  // Menjalankan fungsi fetchTransactions sekali saat komponen pertama kali dimuat 
-  useEffect(() => {
-    const iniFetch = async () => {
-      await fetchTransactions();
-    };
-    iniFetch();
-  }, []); // Pastikan array dependency kosong agar hanya jalan sekali saat mount
 
   const incomeTransaction = transactions.filter((item) => item.type === 'INCOME');
   const expenseTransaction = transactions.filter((item) => item.type === 'EXPENSE');
@@ -97,7 +73,7 @@ function Dashboard() {
 
       <ModalTransaction isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onFetch={fetchTransactions} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
+        onFetch={() => queryClient.invalidateQueries({ queryKey: ['transactions'] })} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
       />
 
       {/* Toaster Notifikasi */}
