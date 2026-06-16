@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import { useAuth } from '../context/useAuth'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Struktur interface Transaksi
 interface Transaction {
@@ -18,8 +19,8 @@ function Dashboard() {
   // Buat state khusus untuk mengatur apakah modal terbuka atau tidak, dengan tipe data boolean
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const { token } = useAuth();
-
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // TenStack Query 
@@ -33,6 +34,13 @@ function Dashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 401) {
+        logout();
+        navigate('/login');
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) throw new Error('Gagal mengambil data');
       const resJSON = await response.json();
       return resJSON.data || resJSON; // Mengembalikan Arrary data

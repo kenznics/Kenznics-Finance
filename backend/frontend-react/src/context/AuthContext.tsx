@@ -14,14 +14,20 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Fungsi Komponen dan State token
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // State menyimpan token , dengan nilai ENV variable
-    const [token, setToken] = useState<string | null>(import.meta.env.VITE_DEV_TOKEN || null);
+    const [token, setToken] = useState<string | null>(() => {
+        return localStorage.getItem('authToken');
+    });
     
     const login = (newToken: string) => {
         setToken(newToken);
+        // Simpan token ke localstorage
+        localStorage.setItem('authToken', newToken)
     };
 
     const logout = () => {
         setToken(null);
+        // Hapus token dari localstorage
+        localStorage.removeItem('authToken')
     };
 
     return (
