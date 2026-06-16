@@ -17,10 +17,10 @@ type TransactionFormInput = z.infer<typeof transactionSchema>;
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onFetch: () => void; // Tambahkan props onFetch untuk menerima fungsi fetchTransactions dari App.tsx
+    onSucces: () => void; // Tambahkan props onFetch untuk menerima fungsi fetchTransactions dari App.tsx
 }
 
-export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
+export function ModalTransaction({ isOpen, onClose, onSucces }: ModalProps) {
     const [isLoading, setIsLoading] = useState(false); // State biar tombol tidak terklik double
 
     const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset } = useForm<TransactionFormInput>({
@@ -54,13 +54,17 @@ export function ModalTransaction({ isOpen, onClose, onFetch }: ModalProps) {
                     duration: 2000,
                     icon: '🚀',
                 });
-                onFetch();
+
+                onSucces();
+
                 reset({
                     title: "",
                     amount: undefined,
                     type: "INCOME"
                 }); // Mengosongkan form React Hook otomatis
+
                 onClose(); // Panggil fungsi fetchTransactions dari App.tsx untuk refresh data transaksi
+                
             } else {
                 console.log("Gagal dengan status:", response.status);
                 try {

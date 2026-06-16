@@ -27,7 +27,7 @@ function Dashboard() {
     queryKey: ['transactions', token], // Kunci unik cache data
     queryFn: async () => {
       if (!token) return [];
-      
+
       const response = await fetch('http://localhost:3000/api/transactions', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -71,9 +71,10 @@ function Dashboard() {
         </div>
       </main>
 
-      <ModalTransaction isOpen={isModalOpen}
+      <ModalTransaction
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onFetch={() => queryClient.invalidateQueries({ queryKey: ['transactions'] })} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
+        onSucces={() => queryClient.invalidateQueries({ queryKey: ['transactions'] })} // Kirim fungsi fetchTransactions sebagai props ke ModalTransaction
       />
 
       {/* Toaster Notifikasi */}

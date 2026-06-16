@@ -1,5 +1,6 @@
 import { useAuth } from '../context/useAuth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast, Toaster } from 'react-hot-toast';
 
 interface Transaction {
     id: number;
@@ -17,7 +18,7 @@ function History() {
     const { data: transactions = [] } = useQuery<Transaction[]>({
         queryKey: ['transactions', token], // Kunci unik cache data
         queryFn: async () => {
-            if (!token) return[];
+            if (!token) return [];
             const response = await fetch('http://localhost:3000/api/transactions', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -42,11 +43,14 @@ function History() {
             if (response.ok) {
                 // Memicu re-fetch otomatis ke backend
                 queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                toast.success('Transaksi berhasil dihapus!');
             } else {
                 console.error('Gagal saat menghapus transaksi');
+                toast.error('Gagal Menghapus Transaksi!');
             }
         } catch (error) {
             console.error('Error saat menghapus transaksi:', error);
+            toast.error('Terjadi kesalahan Jaringan.');
         }
     };
 
@@ -61,7 +65,7 @@ function History() {
                     </h1>
                     {/* Badge Jumlah data */}
                     <span className="inline-block mt-3 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
-                        Total: { (transactions || []).length } Transaksi
+                        Total: {(transactions || []).length} Transaksi
                     </span>
                 </div>
 
@@ -85,7 +89,7 @@ function History() {
 
                             {/* Body Data Dumy statis */}
                             <tbody className="text-slate-600 divide-y divide-slate-100 text-sm">
-                                { (transactions || []).map((item) => {
+                                {(transactions || []).map((item) => {
                                     return (
                                         <tr key={item.id} className="hover:bg slate-50/80 transition-colors">
                                             {/* Kolom Judul */}
@@ -156,8 +160,9 @@ function History() {
                 </div>
 
             </main>
-        </div>
+            <Toaster position="top-center" reverseOrder={false} containerStyle={{ zIndex: 9999 }} />
+        </div >
     );
-}
+};
 
 export default History;
