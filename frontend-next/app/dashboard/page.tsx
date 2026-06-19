@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Card from '@/components/Card';
+import ModalTransaction from '@/components/ModalTransaction';
 
 export default function DashboardPage() {
-    const [angka, setAngka] = useState(0);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     return (
         <main className="p-6 w-full max-w-4xl mx-auto flex flex-col gap-6 mt-6">
@@ -29,12 +30,19 @@ export default function DashboardPage() {
                         Klik Tombol State
                     </p>
                 </div>
+
                 <button
                     type="button"
+                    onClick={() => setIsModalOpen(true)}
                     className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-xl shadow hover:bg-blue-50 transition-colors mt-4 text-sm" >
                     + Tambah Transaksi
                 </button>
             </div>
+
+                <ModalTransaction 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                />
         </main>
     );
 }

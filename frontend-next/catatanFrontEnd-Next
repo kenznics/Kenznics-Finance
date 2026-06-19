@@ -1,2 +1,5 @@
 instalasi FrontEnd-Next
 npx create-next-app@latest
+
+Instalasi library validasi
+npm install react-hook-form @hookform/resolvers zod
