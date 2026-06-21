@@ -11,9 +11,10 @@ const PORT = 3000;
 
 // 2. MIDDLEWARE
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://hoppscotch.io' ], // Mengizinkan alamat frontEnd vite
+  origin: ['http://localhost:3001', 'https://hoppscotch.io' ], // Mengizinkan alamat frontEnd vite
   allowedHeaders: ['Content-Type', 'Authorization'], // Mengizinkan header Auhthorization ke backend
-  credentials: true 
+  credentials: true, 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // metodenya apa saja yg diizinkan
 })); 
 
 // Memperbolehkan frontend dari port mana saja untuk mengakses API

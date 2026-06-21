@@ -9,6 +9,8 @@ interface ModalTransactionProps {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../app/context/useAuth';
 
 const transactionSchema = z.object({
     title: z.string().min(3, { message: "Deskripsi minimal 3 karakter" }),
@@ -27,6 +29,37 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
             type: "EXPENSE",
         }
     });
+
+    const queryClient = useQueryClient();
+
+    const { token } = useAuth();
+
+    const onSubmit = async (data: z.infer<typeof transactionSchema>) => {
+        try {
+            const response = await fetch('http://localhost:3000/api/transactions', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.log("Pesan Error Backend", errorData);
+                throw new Error('Gagal menyimpan transaksi!');
+            }
+
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            reset();
+            onClose();
+            console.log("sukses mengirim data!")
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     // Pengaman 
     if (!isOpen) return null;
@@ -47,11 +80,7 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit((data) => {
-                    console.log("Data Form Lolos Validasi :", data);
-                    // Logika Post request Backend
-                })}
-                    className="flex flex-col gap-4 mt-2">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-2">
 
                     {/* Input Judul Transaksi */}
                     <div className="flex flex-col gap-1">
@@ -103,15 +132,15 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
                             Batal
                         </button>
                         <button
-                            type="button"
+                            type="submit"
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-md"
                         >
                             Simpan
                         </button>
                     </div>
                 </form>
-                
+
             </div>
-        </div>
+        </div >
     )
 }
