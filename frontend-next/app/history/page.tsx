@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { Toaster, toast } from 'react-hot-toast';
+import SkeletonTable from '@/components/SkeletonTable';
 
 export default function HistoryPage() {
 
@@ -43,9 +44,13 @@ export default function HistoryPage() {
                 toast.error('Gagal Menghapus Transaksi!');
             }
         } catch (error) {
-            toast.error('Terjadi Kesalahan Jarinagn.');
+            toast.error('Terjadi Kesalahan Jaringan.');
         }
     };
+
+    if (isLoading) {
+        return <SkeletonTable />
+    }
 
     interface BackendReponse {
         data?: { id: number; title: string; type: string; amount: number }[];
@@ -63,7 +68,7 @@ export default function HistoryPage() {
             <main className="p-6 w-full max-w-2xl flex flex-col gap-6 mt-10">
                 {/* Judul utama */}
                 <div className="text-center">
-                    <h1 className="text-3xl font-extrabold text-blue-400 tracking-tight">
+                    <h1 className="text-3xl font-extrabold text-blue-500 tracking-tight">
                         Riwayat Transaksi
                     </h1>
                     {/* Badge Jumlah data */}
@@ -145,7 +150,7 @@ export default function HistoryPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleDelete(item.id)}
-                                                    className="bg-rose-500 hover:bg-rose-500 text-white font-medium 
+                                                    className="bg-rose-500 hover:bg-emerald-500 text-white font-medium 
                                                 px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
                                                     Hapus
                                                 </button>

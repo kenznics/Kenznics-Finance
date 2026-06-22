@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../app/context/useAuth';
+import { toast }  from 'react-hot-toast';
 
 const transactionSchema = z.object({
     title: z.string().min(3, { message: "Deskripsi minimal 3 karakter" }),
@@ -52,9 +53,9 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
             }
 
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            toast.success('Transaksi berhasil disimpan!')
             reset();
             onClose();
-            console.log("sukses mengirim data!")
 
         } catch (error) {
             console.error(error);
@@ -127,13 +128,13 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium transition-colors"
+                            className="px-4 py-2 bg-slate-100 hover:bg-rose-500 text-slate-700 rounded-xl text-xs font-medium transition-colors"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-md"
+                            className="px-4 py-2 bg-blue-600 hover:bg-emerald-400 text-white rounded-xl font-medium transition-colors shadow-md"
                         >
                             Simpan
                         </button>

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../context/useAuth';
 import { useRouter } from "next/navigation";
+import { toast } from 'react-hot-toast';
 
 // Definisi aturan validasi form dengan Zod
 const loginSchema = z.object({
@@ -46,6 +47,7 @@ export default function Login() {
                 login(resJSON.token);
                 // Setelah token disimpan, langsung ke dashboard
                 navigate.push('/');
+                toast.success('Anda Berhasil Login!')
             } else {
                 alert("Login gagal!")
             }
@@ -93,7 +95,7 @@ export default function Login() {
                     {/* Tombol Submit */}
                     <button
                         type="submit"
-                        className="mt-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 
+                        className="mt-2 w-full py-2.5 bg-blue-600 hover:bg-emerald-400 
                         text-white rounded-xl text-sm font-semibold shadow-sm cursor-pointer"
                     >
                         Masuk

@@ -1,14 +1,19 @@
 "use client"; // Menandakan file ini adalah Client Component
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '@/components/Card';
 import ModalTransaction from '@/components/ModalTransaction';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
-import { array } from 'zod';
+import SkeletonTable from '@/components/SkeletonTable';
 
 export default function DashboardPage() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [mounted, setMounted] = useState<boolean>(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { token } = useAuth();
 
@@ -28,12 +33,18 @@ export default function DashboardPage() {
         enabled: !!token,
     });
 
+    if (!mounted) return null;
+    if (isLoading) return <SkeletonTable />
+
+    // Membuat X-ray tipe datanya (interface)
     interface BackendReponse {
         data?: { id: number; title: string; type: string; amount: number }[];
         transactions?: { id: number; title: string; type: string; amount: number }[];
     }
 
+    // Menyamarkan tipe Type Assertion
     const resData = transactions as BackendReponse | undefined;
+    // Pengaman runtime Array.isArray
     const transactionList = Array.isArray(transactions)
         ? transactions
         : resData?.data || resData?.transactions || [];
@@ -73,7 +84,7 @@ export default function DashboardPage() {
                 <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-xl shadow hover:bg-blue-50 transition-colors mt-4 text-sm" >
+                    className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-xl shadow hover:bg-gray-400 transition-colors mt-4 text-sm" >
                     + Tambah Transaksi
                 </button>
             </div>
