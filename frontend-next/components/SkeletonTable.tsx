@@ -1,6 +1,5 @@
-"use client";
-
 export default function SkeletonTable() {
+
     return (
         <div className="w-full space-y-4 animate-pulse p-4">
             {/* Header tabel berkedip */}

@@ -11,12 +11,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../app/context/useAuth';
-import { toast }  from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const transactionSchema = z.object({
-    title: z.string().min(3, { message: "Deskripsi minimal 3 karakter" }),
+    title: z.string()
+        .min(3, { message: "Deskripsi minimal 3 karakter" })
+        .refine((val) => !/^\d+$/.test(val), {
+            message : "Deskripsi tidak boleh hanya berisi angka!"
+        }),
     type: z.enum(["INCOME", "EXPENSE"], { message: "Pilih tipe transaksi" }),
-    amount: z.number().positive({ message: "Jumlah harus lebih besar dari 0!" }),
+    amount: z.number().positive({ message: "Jumlah harus lebih besar dari 0!" })
+        .min(1000, { message: "Nominal minimal Rp 1.000" }),
 })
 
 type TransactionFormData = z.infer<typeof transactionSchema>
@@ -27,7 +32,8 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
         resolver: zodResolver(transactionSchema),
         defaultValues: {
             title: "",
-            type: "EXPENSE",
+            amount: 0,
+            type: "EXPENSE"
         }
     });
 
@@ -49,7 +55,8 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 console.log("Pesan Error Backend", errorData);
-                throw new Error('Gagal menyimpan transaksi!');
+
+                throw new Error(errorData.message || errorData.error || 'Gagal menyimpan transaksi!');
             }
 
             queryClient.invalidateQueries({ queryKey: ["transactions"] });

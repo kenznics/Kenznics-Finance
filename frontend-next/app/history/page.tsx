@@ -3,7 +3,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { Toaster, toast } from 'react-hot-toast';
-import SkeletonTable from '@/components/SkeletonTable';
+import dynamic from 'next/dynamic';
+
+const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
+    ssr: false, // Next.js akan merender komponen ini di browser
+    loading: () => <div className="p-6 w-full max-w-4xl mx-auto flex flex-col gap-6 mt-6 items-center" />
+    // Fungsi Placeholder selama proses SSR di server
+});
 
 export default function HistoryPage() {
 
