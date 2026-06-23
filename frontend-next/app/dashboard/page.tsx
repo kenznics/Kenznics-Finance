@@ -1,6 +1,6 @@
 "use client"; // Menandakan file ini adalah Client Component
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Card from '@/components/Card';
 import ModalTransaction from '@/components/ModalTransaction';
 import { useQuery } from '@tanstack/react-query';
@@ -9,12 +9,6 @@ import SkeletonTable from '@/components/SkeletonTable';
 
 export default function DashboardPage() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [mounted, setMounted] = useState<boolean>(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
     const { token } = useAuth();
 
     const { data: transactions, isLoading } = useQuery({
@@ -33,7 +27,6 @@ export default function DashboardPage() {
         enabled: !!token,
     });
 
-    if (!mounted) return null;
     if (isLoading) return <SkeletonTable />
 
     // Membuat X-ray tipe datanya (interface)

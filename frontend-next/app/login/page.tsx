@@ -46,10 +46,10 @@ export default function Login() {
                 // Simpan Token dari backend ke dalam state global
                 login(resJSON.token);
                 // Setelah token disimpan, langsung ke dashboard
+                toast.success('Anda Berhasil Login!');
                 navigate.push('/');
-                toast.success('Anda Berhasil Login!')
             } else {
-                alert("Login gagal!")
+                toast.error('Email atau Password salah!')
             }
         } catch (error) {
             console.error('Error saat melakukkan login', error);

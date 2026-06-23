@@ -44,7 +44,7 @@ export default function HistoryPage() {
                 toast.error('Gagal Menghapus Transaksi!');
             }
         } catch (error) {
-            toast.error('Terjadi Kesalahan Jaringan.');
+            toast.error(error instanceof Error ? error.message : 'Terjadi Kesalahan Jaringan.');
         }
     };
 

@@ -53,11 +53,12 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
             }
 
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
-            toast.success('Transaksi berhasil disimpan!')
+            toast.success('Transaksi berhasil disimpan!');
             reset();
             onClose();
 
         } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Gagal Menyimpan Transaksi!');
             console.error(error);
         }
     };

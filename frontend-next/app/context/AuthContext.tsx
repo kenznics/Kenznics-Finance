@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useState, type ReactNode } from 'react';
 
 // Definisi tipe data untuk isi state global 
