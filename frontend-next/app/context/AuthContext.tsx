@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 
 // Definisi tipe data untuk isi state global 
 interface AuthContextType {
@@ -24,10 +24,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
     });
 
+    const  [isMounted, setIsMounted] = useState(false);
+    
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsMounted(true);
+    }, []);
+
     const login = (newToken: string) => {
         setToken(newToken);
         if (typeof window !== 'undefined') {
             localStorage.setItem('authToken', newToken)
+            // Baris untuk menyimpan cookie
+            document.cookie = `authToken=${newToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;  
         }
     };
 
@@ -35,12 +44,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(null);
         if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken')
+            // Menghapus cookie dengan memundurkan tanggal expirednya
+            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';  
         }
     };
 
     return (
         <AuthContext.Provider value={{ token, login, logout }}>
-            {children}
+            {isMounted ? children : <div className="opacity-0">{children}</div>}
         </AuthContext.Provider>
     );
 };

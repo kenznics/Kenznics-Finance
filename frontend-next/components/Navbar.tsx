@@ -1,12 +1,17 @@
 "use client";
 
 import { useAuth } from "@/app/context/useAuth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import Link from "next/link";
 export default function Navbar() {
     const { logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+
+        if (pathname === '/login') {
+            return null;
+        }
 
     const handleLogout = () => {
         // Eksekusi fungsi logout global menghapus token di state dan local

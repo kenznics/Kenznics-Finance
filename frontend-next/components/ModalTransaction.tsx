@@ -9,7 +9,7 @@ interface ModalTransactionProps {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../app/context/useAuth';
 import { toast } from 'react-hot-toast';
 
@@ -41,33 +41,36 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
 
     const { token } = useAuth();
 
-    const onSubmit = async (data: z.infer<typeof transactionSchema>) => {
-        try {
+    const transactionMutation = useMutation({
+        mutationFn: async (newTx: TransactionFormData) => {
             const response = await fetch('http://localhost:3000/api/transactions', {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(newTx)
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.log("Pesan Error Backend", errorData);
-
-                throw new Error(errorData.message || errorData.error || 'Gagal menyimpan transaksi!');
+                throw new Error(errorData.message || errorData.error || 'Gagal menyimpan transaksi');
             }
-
+            return response.json();
+        },
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
             toast.success('Transaksi berhasil disimpan!');
             reset();
             onClose();
-
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal Menyimpan Transaksi!');
-            console.error(error);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Gagal Menyimpan Transaksi!');
         }
+    });
+
+    const onSubmit = (data: TransactionFormData) => {
+        transactionMutation.mutate(data);
     };
 
     // Pengaman 
