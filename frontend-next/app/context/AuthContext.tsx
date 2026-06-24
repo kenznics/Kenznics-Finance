@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
     });
 
-    const  [isMounted, setIsMounted] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
