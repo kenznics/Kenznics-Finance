@@ -1,9 +1,10 @@
 "use client"
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { Toaster, toast } from 'react-hot-toast';
 import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 
 const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
     ssr: false, // Next.js akan merender komponen ini di browser
@@ -33,8 +34,8 @@ export default function HistoryPage() {
         enabled: !!token,
     });
 
-    const handleDelete = async (id: number) => {
-        try {
+    const deleteMutation = useMutation({
+        mutationFn: async (id: number) => {
             const response = await fetch(`http://localhost:3000/api/transactions/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -42,16 +43,23 @@ export default function HistoryPage() {
                 }
             });
 
-            if (response.ok) {
-                // Re-ftetch otomatis ke backend
-                queryClient.invalidateQueries({ queryKey: ['transactions'] });
-                toast.success('Transaksi berhasil dihapus!');
-            } else {
-                toast.error('Gagal Menghapus Transaksi!');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || errorData.error || 'Gagal menghapus transaksi!');
             }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Terjadi Kesalahan Jaringan.');
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            toast.success('Transaksi berhasil dihapus!');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Gagal menghapus transaksi!')
         }
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     if (isLoading) {
@@ -69,6 +77,7 @@ export default function HistoryPage() {
         : resData?.data || resData?.transactions || [];
 
     return (
+        <Suspense fallback={<SkeletonTable />}>
         <div className="p-6 w-full max-w-4xl mx-auto flex flex-col gap-6 mt-6 items-center">
 
             <main className="p-6 w-full max-w-2xl flex flex-col gap-6 mt-10">
@@ -84,7 +93,7 @@ export default function HistoryPage() {
                 </div>
 
                 {/* Kotak Border wadah */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-center items-center min-h-[200px]">
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-center items-center min-h-50">
 
                     <div className="overflow-x-auto w-full">
                         <table className="w-full text-left border-collapse">
@@ -174,5 +183,6 @@ export default function HistoryPage() {
             </main>
             <Toaster position="top-center" reverseOrder={false} containerStyle={{ zIndex: 9999 }} />
         </div >
+        </Suspense>
     );
 }  

@@ -58,7 +58,7 @@ export default function Login() {
 
     // Bagian Return HTML/UI Form 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center p-6">
+        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
 
             <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm w-full max-w-md">
                 <div className="text-center mb-6">
