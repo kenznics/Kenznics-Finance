@@ -1,6 +1,6 @@
 "use client"; // Menandakan file ini adalah Client Component
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Card from '@/components/Card';
 import ModalTransaction from '@/components/ModalTransaction';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +27,7 @@ interface BackendResponse {
     transactions?: BackendTransaction[];
 }
 
-interface TransactionItem extends BackEndTransaction {
+interface TransactionItem extends BackendTransaction {
     runningBalance: number;
 }
 
@@ -53,13 +53,13 @@ export default function DashboardPage() {
     //1. Mengambil List data transaksi mentah 
     const transactionList = useMemo(() => {
         if (!transactions) return [];
-        const resData = transactions as BackendReesponse;
+        const resData = transactions as BackendResponse;
         return Array.isArray(transactions)
             ? transactions
             : resData?.data || resData?.transactions || [];
     }, [transactions]);
 
-    const { totalIncome, totalExpanse } = useMemo(() => {
+    const { totalIncome, totalExpense } = useMemo(() => {
         let income = 0;
         let expense = 0;
 
@@ -69,7 +69,7 @@ export default function DashboardPage() {
         });
 
         return { totalIncome: income, totalExpense: expense };
-    }, [transactionsList]);
+    }, [transactionList]);
 
     const latestTransactions = useMemo(() => {
         if (transactionList.length === 0) return [];
@@ -78,6 +78,7 @@ export default function DashboardPage() {
             (a, b) => new Date(a.createAt || 0).getTime() - new Date(b.createAt || 0).getTime()
         );
 
+        // 2. Gunakan .reduce secara mandiri di luar perulangan map
         const transactionWithBalance = chronologicalTransactions.reduce((acc: TransactionItem[], t: BackendTransaction) => {
             const previousBalance = acc.length > 0 ? acc[acc.length - 1].runningBalance : 0;
 
@@ -95,22 +96,6 @@ export default function DashboardPage() {
         return [...transactionWithBalance].reverse();
     }, [transactionList]);
 
-    // 2. Gunakan .reduce secara mandiri di luar perulangan map
-    const transactionWithBalance = chronologicalTransactions.reduce((acc: TransactionItem[], t: TransactionItem) => {
-        const item = t;
-        const previousBalance = acc.length > 0 ? acc[acc.length - 1].runningBalance || 0 : 0;
-
-        let newBalance = previousBalance;
-        if (item.type === 'INCOME') {
-            newBalance += item.amount;
-        } else if (item.type === 'EXPENSE') {
-            newBalance -= item.amount;
-        }
-
-        acc.push({ ...item, runningBalance: newBalance });
-        return acc;
-    }, []);
-
     if (isLoading) return <SkeletonTable />
 
     return (
@@ -124,11 +109,22 @@ export default function DashboardPage() {
                         amount={`Rp ${totalIncome.toLocaleString('id-ID')}`}
                         bgColor="bg-emerald-50 border-emerald-100"
                     />
+
                     <Card
                         title="Total Pengeluaran"
                         amount={`Rp ${totalExpense.toLocaleString('id-ID')}`}
                         bgColor="bg-rose-50 border-rose-100"
                     />
+                </div>
+
+                <div className="md:col-span-2 flex justify-center w-full">
+                    <div className="w-full md:w-1/2">
+                        <Card
+                            title="Total Sisa Saldo"
+                            amount={`Rp ${(totalIncome - totalExpense).toLocaleString('id-ID')}`}
+                            bgColor="bg-blue-50 border-blue-100"
+                        />
+                    </div>
                 </div>
 
                 {/* Kotak Utama: Rincian Aktivitas */}
@@ -138,12 +134,14 @@ export default function DashboardPage() {
                         <p className="text-gray-400 text-xs mt-1">Log perubahan saldo berdasarkan waktu transaksi</p>
                     </div>
 
+
                     <div className='flex flex-col gap-3 max-h-75 overflow-y-auto pr-1'>
                         {latestTransactions.length === 0 ? (
                             <p className="text-gray-500 text-sm text-center py-4">Belum ada Riwayat Transaksi.</p>
                         ) : (
                             latestTransactions.map((t: { id: number; title: string; type: string; amount: number; runningBalance: number; createdAt?: string }) => (
                                 <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-800/50 border border-gray-800 rounded-xl gap-2">
+
                                     <div className='flex flex-col'>
                                         <span className='font-semibold text-sm text-gray-200'>{t.title}</span>
                                         <span className="text-gray-400 text-xs">
@@ -158,6 +156,17 @@ export default function DashboardPage() {
                                                 : 'Waktu tidak tersedia'}
                                         </span>
                                     </div>
+
+                                    <div className="flex flex-col sm:items-end gap-1">
+                                        <span className={`font-bold text-sm ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            {t.type === 'INCOME' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
+                                        </span>
+
+                                        <span className="text-gray-400 text-xs">
+                                            Saldo: <strong className="text-gray-300">Rp {t.runningBalance.toLocaleString('id-ID')}</strong>
+                                        </span>
+                                    </div>
+
                                     <div className="flex flex-col sm:items-end gap-1">
                                         <span className={`font-bold text-sm ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-rose-400'}`}>
                                             {t.type === 'INCOME' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
