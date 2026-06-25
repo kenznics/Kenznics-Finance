@@ -14,6 +14,23 @@ const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
     // Fungsi Placeholder selama proses SSR di server
 });
 
+interface BackendTransaction {
+    id: number;
+    title: string;
+    type: string;
+    amount: number;
+    createdAt?: string;
+}
+
+interface BackendResponse {
+    data?: BackendResponse[];
+    transactions?: BackendTransaction[];
+}
+
+interface TransactionItem extends BackEndTransaction {
+    runningBalance: number;
+}
+
 export default function DashboardPage() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const { token } = useAuth();
@@ -33,42 +50,50 @@ export default function DashboardPage() {
         enabled: !!token,
     });
 
-    if (isLoading) return <SkeletonTable />
+    //1. Mengambil List data transaksi mentah 
+    const transactionList = useMemo(() => {
+        if (!transactions) return [];
+        const resData = transactions as BackendReesponse;
+        return Array.isArray(transactions)
+            ? transactions
+            : resData?.data || resData?.transactions || [];
+    }, [transactions]);
 
-    // Membuat X-ray tipe datanya (interface)
-    interface BackendResponse {
-        data?: { id: number; title: string; type: string; amount: number; createdAt?: string }[];
-        transactions?: { id: number; title: string; type: string; amount: number; createdAt?: string }[];
-    }
+    const { totalIncome, totalExpanse } = useMemo(() => {
+        let income = 0;
+        let expense = 0;
 
-    // Menyamarkan tipe Type Assertion
-    const resData = transactions as BackendResponse | undefined;
-    // Pengaman runtime Array.isArray
-    const transactionList = Array.isArray(transactions)
-        ? transactions
-        : resData?.data || resData?.transactions || [];
+        transactionList.forEach((t: BackendTransaction) => {
+            if (t.type === 'INCOME') income += t.amount;
+            if (t.type === 'EXPENSE') expense += t.amount;
+        });
 
-    const totalIncome = transactionList
-        .filter((t: { type: string; amount: number }) => t.type === 'INCOME')
-        .reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
+        return { totalIncome: income, totalExpense: expense };
+    }, [transactionsList]);
 
-    const totalExpense = transactionList
-        .filter((t: { type: string; amount: number }) => t.type === 'EXPENSE')
-        .reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
+    const latestTransactions = useMemo(() => {
+        if (transactionList.length === 0) return [];
 
-    // 1. Urutkan dari transaksi paling lama ke paling baru
-    const chronologicalTransactions = [...transactionList].sort(
-        (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
-    );
+        const chronologicalTransactions = [...transactionList].sort(
+            (a, b) => new Date(a.createAt || 0).getTime() - new Date(b.createAt || 0).getTime()
+        );
 
-    interface TransactionItem {
-        id: number;
-        title: string;
-        type: string;
-        amount: number;
-        createdAt?: string;
-        runningBalance?: number;
-    }
+        const transactionWithBalance = chronologicalTransactions.reduce((acc: TransactionItem[], t: BackendTransaction) => {
+            const previousBalance = acc.length > 0 ? acc[acc.length - 1].runningBalance : 0;
+
+            let newBalance = previousBalance;
+            if (t.type === 'INCOME') {
+                newBalance += t.amount;
+            } else if (t.type === 'EXPENSE') {
+                newBalance -= t.amount;
+            }
+
+            acc.push({ ...t, runningBalance: newBalance });
+            return acc;
+        }, []);
+
+        return [...transactionWithBalance].reverse();
+    }, [transactionList]);
 
     // 2. Gunakan .reduce secara mandiri di luar perulangan map
     const transactionWithBalance = chronologicalTransactions.reduce((acc: TransactionItem[], t: TransactionItem) => {
@@ -86,8 +111,7 @@ export default function DashboardPage() {
         return acc;
     }, []);
 
-    // 3. Urutkan agar transaksi terbaru di posisi paling atas halaman
-    const latestTransactions = [...transactionWithBalance].reverse();
+    if (isLoading) return <SkeletonTable />
 
     return (
         <Suspense fallback={<SkeletonTable />}>
