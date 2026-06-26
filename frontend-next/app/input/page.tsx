@@ -20,7 +20,7 @@ export default function InputPage() {
     const { data: transactions, isLoading } = useQuery({
         queryKey: ['transactions', token],
         queryFn: async () => {
-            const response = await fetch('http://localhost:3000/api/transactions', {
+            const response = await fetch('/api/transactions', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
