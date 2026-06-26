@@ -8,10 +8,11 @@ export default function Navbar() {
     const { logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const hiddenRoutes = ['/login', '/'];
 
-        if (pathname === '/login') {
-            return null;
-        }
+    if (hiddenRoutes.includes(pathname)) {
+        return null;
+    }
 
     const handleLogout = () => {
         // Eksekusi fungsi logout global menghapus token di state dan local
@@ -30,6 +31,10 @@ export default function Navbar() {
             <div className="flex gap-4 text-sm font-medium">
                 <Link href="/dashboard" className="py-2.5 hover:text-indigo-300 transition-colors">
                     Dashboard
+                </Link>
+
+                <Link href="/input" className="py-2.5 hover:text-indigo-300 transition-colors">
+                    Input Transaksi
                 </Link>
 
                 <Link href="/history" className="py-2.5 hover:text-indigo-300 transition-colors">

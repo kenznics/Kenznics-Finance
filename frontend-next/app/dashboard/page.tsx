@@ -1,8 +1,7 @@
 "use client"; // Menandakan file ini adalah Client Component
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import Card from '@/components/Card';
-import ModalTransaction from '@/components/ModalTransaction';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import dynamic from 'next/dynamic';
@@ -32,7 +31,6 @@ interface TransactionItem extends BackendTransaction {
 }
 
 export default function DashboardPage() {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const { token } = useAuth();
 
     const { data: transactions, isLoading } = useQuery({
@@ -180,28 +178,6 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
-
-                {/* Banner Tombol Tambah Transaksi */}
-                <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-md text-center w-full mt-4">
-                    <div>
-                        <h2 className="text-2xl font-bold">Sudahkah Bertransaksi Hari Ini?</h2>
-                        <p className="mt-2 text-blue-100 text-sm">
-                            Tambahkan Transaksi
-                        </p>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={() => setIsModalOpen(true)}
-                        className="px-5 py-2.5 bg-white text-blue-600 font-bold rounded-xl shadow hover:bg-gray-400 transition-colors mt-4 text-sm" >
-                        + Tambah Transaksi
-                    </button>
-                </div>
-
-                <ModalTransaction
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                />
             </main>
         </Suspense>
     );
