@@ -38,7 +38,6 @@ export default function DashboardPage() {
         queryFn: async () => {
             const response = await fetch('/api/transactions', {
                 headers: {
-                    'Authorization': `Bearer ${token}`
                 }
             });
 

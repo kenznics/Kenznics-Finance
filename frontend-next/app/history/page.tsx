@@ -36,10 +36,10 @@ export default function HistoryPage() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => {
-            const response = await fetch(`http://localhost:3000/api/transactions/${id}`, {
+            const response = await fetch(`/api/transactions/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    "Content-Type": "application/json"
                 }
             });
 

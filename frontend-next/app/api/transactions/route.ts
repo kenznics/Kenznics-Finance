@@ -36,3 +36,43 @@ export async function GET() {
         );
     }
 }
+
+export async function POST(request: Request) {
+    try {
+        const cookiesStore = await cookies();
+        const token = cookiesStore.get('authToken')?.value;
+
+        if (!token) {
+            return NextResponse.json({ error: 'Askses ditolak, token tidak ditemukan' }, { status: 401 });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'KenzNik500.') as MyJWTPayLoad;
+        const loggedInUserId = decoded.userId || decoded.id;
+
+        if (!loggedInUserId) {
+            return NextResponse.json({ error: 'Pengguna tidak valid atau tidak dikenali'}, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { title, amount, type } = body;
+
+        const newTransaction = await prisma.transaction.create({
+            data: {
+                title: title,
+                amount: parseFloat(amount),
+                type: type,
+                userId: loggedInUserId
+            }
+        });
+
+        return NextResponse.json(newTransaction, { status: 201 });
+
+    } catch (error) {
+        console.error("Gagal menambahkan data di Route Handler", error);
+        return NextResponse.json(
+            { error: 'Terjadi kesalahan server internal saat menyimpan data' },
+            { status: 500 }
+        );
+    }
+}
+

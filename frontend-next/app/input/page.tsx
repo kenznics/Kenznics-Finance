@@ -2,8 +2,6 @@
 
 import ModalTransaction from "@/components/ModalTransaction";
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../context/useAuth';
 import dynamic from "next/dynamic";
 import { Suspense } from 'react';
 
@@ -15,24 +13,6 @@ const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
 
 export default function InputPage() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const { token } = useAuth();
-
-    const { data: transactions, isLoading } = useQuery({
-        queryKey: ['transactions', token],
-        queryFn: async () => {
-            const response = await fetch('/api/transactions', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) throw new Error('Gagal mengambil data');
-            return response.json();
-        },
-        enabled: !!token,
-    });
-
-    if (isLoading) return <SkeletonTable />
 
     return (
         <Suspense fallback={<SkeletonTable />}>

@@ -9,8 +9,7 @@ interface ModalTransactionProps {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../app/context/useAuth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
 const transactionSchema = z.object({
@@ -39,15 +38,12 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
 
     const queryClient = useQueryClient();
 
-    const { token } = useAuth();
-
     const transactionMutation = useMutation({
         mutationFn: async (newTx: TransactionFormData) => {
-            const response = await fetch('http://localhost:3000/api/transactions', {
+            const response = await fetch('/api/transactions', {
                 method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(newTx)
             });
