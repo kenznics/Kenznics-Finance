@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -64,6 +65,10 @@ export async function POST(request: Request) {
                 userId: loggedInUserId
             }
         });
+
+        revalidatePath('/dasboard');
+        revalidatePath('/history');
+        revalidatePath('/input');
 
         return NextResponse.json(newTransaction, { status: 201 });
 

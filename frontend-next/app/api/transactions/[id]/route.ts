@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -49,6 +50,10 @@ export async function DELETE(
         await prisma.transaction.delete({
             where: { id: transactionId }
         });
+
+        revalidatePath('/dashboard');
+        revalidatePath('/history');
+        revalidatePath('/input');
 
         return NextResponse.json({ message: 'Transaksi berhasil dihapus' }, { status: 200 });
 
