@@ -1,33 +1,49 @@
 "use client";
 
 // Type Script Interface
-interface ModalTransactionProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
+import { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
+interface ModalTransactionProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+// Format Fungsi Ribuan 
+const formatRibuan = (value: string | number) => {
+    if (!value && value !== 0) return "";
+    const angkaMurni = value.toString().replace(/\D/g, "");
+    if (!angkaMurni) return "";
+    return angkaMurni.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 const transactionSchema = z.object({
     title: z.string()
-        .min(3, { message: "Deskripsi minimal 3 karakter" })
+        .min(3, { message: "Deskripsi minimal 3 karakter!" })
         .refine((val) => !/^\d+$/.test(val), {
-            message : "Deskripsi tidak boleh hanya berisi angka!"
+            message: "Deskripsi tidak boleh hanya berisi angka!"
         }),
+
     type: z.enum(["INCOME", "EXPENSE"], { message: "Pilih tipe transaksi" }),
-    amount: z.number().positive({ message: "Jumlah harus lebih besar dari 0!" })
-        .min(1000, { message: "Nominal minimal Rp 1.000" }),
-})
+
+    amount: z.number({ message: "Nominal harus diisi" })
+        .positive({ message: "Jumlah harus lebih besar dari 0!" })
+        .min(1000, { message: "Nominal minimal Rp 1.000" })
+});
+
 
 type TransactionFormData = z.infer<typeof transactionSchema>
 
 export default function ModalTransaction({ isOpen, onClose }: ModalTransactionProps) {
+    // State Lokal untuk visual teks input dengan format titik
+    const [displayAmount, setDisplayAmount] = useState<string>("");
+
     // Hook UseForm
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<TransactionFormData>({
+    const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<TransactionFormData>({
         resolver: zodResolver(transactionSchema),
         defaultValues: {
             title: "",
@@ -35,6 +51,12 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
             type: "EXPENSE"
         }
     });
+
+    const handleCloseModal = () => {
+        reset();
+        setDisplayAmount("");
+        onClose();
+    }
 
     const queryClient = useQueryClient();
 
@@ -57,8 +79,7 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
             toast.success('Transaksi berhasil disimpan!');
-            reset();
-            onClose();
+            handleCloseModal();
         },
         onError: (error: Error) => {
             toast.error(error.message || 'Gagal Menyimpan Transaksi!');
@@ -73,9 +94,9 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" >
 
-            <div className="bg-gray-100 rounded-2xl p-6 w-full max-w-md shadow-xl broder border-slate-400 flex flex-col gap-4">
+            <div className="bg-gray-100 rounded-2xl p-6 w-full max-w-md shadow-xl border border-slate-400 flex flex-col gap-4">
 
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 className="text-lg font-bold text-slate-800">Tambah Transaksi Baru</h3>
@@ -121,10 +142,17 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-semibold text-gray-700">Nominal (Rp)</label>
                         <input
-                            type="number"
+                            type="text"
                             className="w-full px-4 py-2 border rounded-xl text-gray-900 bg-white"
-                            placeholder="Contoh: 50000"
-                            {...register("amount", { valueAsNumber: true })}
+                            placeholder="Contoh: 10.000"
+                            value={displayAmount}
+                            onChange={(e) => {
+                                const inputVal = e.target.value;
+                                const angkaMurni = inputVal.replace(/\D/g, "");
+
+                                setDisplayAmount(formatRibuan(angkaMurni));
+                                setValue("amount", angkaMurni ? Number(angkaMurni) : 0, { shouldValidate: true })
+                            }}
                         />
                         {errors.amount &&
                             <span className="text-xs text-red-500 font-medium">{errors.amount.message}</span>}
@@ -134,7 +162,7 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
                     <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 mt-2">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleCloseModal}
                             className="px-4 py-2 bg-slate-100 hover:bg-rose-500 text-slate-700 rounded-xl text-xs font-medium transition-colors"
                         >
                             Batal

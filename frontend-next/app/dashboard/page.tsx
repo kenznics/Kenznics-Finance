@@ -136,14 +136,14 @@ export default function DashboardPage() {
                         {latestTransactions.length === 0 ? (
                             <p className="text-gray-500 text-sm text-center py-4">Belum ada Riwayat Transaksi.</p>
                         ) : (
-                            latestTransactions.map((t: { id: number; title: string; type: string; amount: number; runningBalance: number; createdAt?: string }) => (
+                            latestTransactions.map((t: { id: number; title: string; type: string; amount: number; runningBalance: number; createAt?: string }) => (
                                 <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-800/50 border border-gray-800 rounded-xl gap-2">
 
                                     <div className='flex flex-col'>
                                         <span className='font-semibold text-sm text-gray-200'>{t.title}</span>
                                         <span className="text-gray-400 text-xs">
-                                            {t.createdAt
-                                                ? new Date(t.createdAt).toLocaleString('id-ID', {
+                                            {t.createAt
+                                                ? new Date(t.createAt).toLocaleString('id-ID', {
                                                     day: '2-digit',
                                                     month: 'long',
                                                     year: 'numeric',
