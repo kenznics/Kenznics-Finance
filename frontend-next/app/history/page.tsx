@@ -1,7 +1,6 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../context/useAuth';
 import { Toaster, toast } from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
@@ -14,24 +13,20 @@ const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
 
 export default function HistoryPage() {
 
-    const { token } = useAuth();
     const queryClient = useQueryClient();
 
     const { data: transactions, isLoading } = useQuery({
-        queryKey: ['transactions', token],
+        queryKey: ['transactions'],
 
         queryFn: async () => {
 
             const response = await fetch('/api/transactions', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: {}
             });
 
             if (!response.ok) throw new Error('Gagal mengambil data riwayat');
             return response.json();
         },
-        enabled: !!token,
     });
 
     const deleteMutation = useMutation({

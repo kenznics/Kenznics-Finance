@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 const loginSchema = z.object({
     email: z.string().email({ message: "Format email tidak valid" }),
     password: z.string().min(6, { message: "Password minimal 6 karakter!" }),
+    rememberMe: z.boolean().optional(),
 });
 
 // Tipe data TS berdasarkana skema Zod diatas
@@ -22,7 +23,8 @@ export default function Login() {
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: "",
-            password: ""
+            password: "",
+            rememberMe: false
         }
     });
 
@@ -33,7 +35,7 @@ export default function Login() {
     // Fungsi untuk menangani pengiriman data form submit (handler)
     const onSubmit = async (data: LoginFormInput) => {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -90,6 +92,18 @@ export default function Login() {
                             placeholder="••••••"
                         />
                         {errors.password && <span className="text-xs text-rose-500 font-medium">{errors.password.message}</span>}
+                    </div>
+
+                    <div className='flex items-center gap-2 mt-1'>
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                            {...register('rememberMe')}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                        <label htmlFor='rememberMe' className="text-xs font-semibold text-slate-600 cursor-pointer select-none">
+                            Remember This Device
+                        </label>
                     </div>
 
                     {/* Tombol Submit */}

@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import Card from '@/components/Card';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../context/useAuth';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
@@ -31,10 +30,9 @@ interface TransactionItem extends BackendTransaction {
 }
 
 export default function DashboardPage() {
-    const { token } = useAuth();
 
     const { data: transactions, isLoading } = useQuery({
-        queryKey: ['transactions', token],
+        queryKey: ['transactions'],
         queryFn: async () => {
             const response = await fetch('/api/transactions', {
                 headers: {
@@ -44,7 +42,6 @@ export default function DashboardPage() {
             if (!response.ok) throw new Error('Gagal mengambil data');
             return response.json();
         },
-        enabled: !!token,
     });
 
     //1. Mengambil List data transaksi mentah 
@@ -72,7 +69,7 @@ export default function DashboardPage() {
         if (transactionList.length === 0) return [];
 
         const chronologicalTransactions = [...transactionList].sort(
-            (a, b) => new Date(a.createAt || 0).getTime() - new Date(b.createAt || 0).getTime()
+            (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
 
         // 2. Gunakan .reduce secara mandiri di luar perulangan map
