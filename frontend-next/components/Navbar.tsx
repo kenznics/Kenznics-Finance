@@ -8,7 +8,7 @@ export default function Navbar() {
     const { logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
-    const hiddenRoutes = ['/login', '/'];
+    const hiddenRoutes = ['/login', '/', '/register'];
 
     if (hiddenRoutes.includes(pathname)) {
         return null;

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useAuth } from '../context/useAuth';
 import { useRouter } from "next/navigation";
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 // Definisi aturan validasi form dengan Zod
 const loginSchema = z.object({
@@ -114,6 +115,14 @@ export default function Login() {
                     >
                         Masuk
                     </button>
+
+                    <p className="text-xs text-center text-slate-500 mt-4">
+                        Belum memiliki akun? {' '}
+                        <Link href="/register" className="text-blue-600 hover:text-emerald-500 font-semibold transition-colors">
+                            Daftar di sini
+                        </Link>
+                    </p>
+
                 </form>
             </div>
         </div >
