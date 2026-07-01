@@ -5,6 +5,7 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 // Definisi tipe data untuk isi state global 
 interface AuthContextType {
     token: string | null;
+    user: { name: string; email: string } | null;
     login: (newToken: string) => void;
     logout: () => void;
 }
@@ -24,12 +25,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
     });
 
+    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
     const [isMounted, setIsMounted] = useState(false);
     
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
-    }, []);
+
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUser(data.user);
+                } 
+            } catch (error) {
+                console.error('Gagal memuat profile pengguna', error);
+            }
+        };
+
+        if (token) {
+            fetchProfile();
+        }
+    }, [token]);
 
     const login = (newToken: string) => {
         setToken(newToken);
@@ -50,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ token, login, logout }}>
+        <AuthContext.Provider value={{ token, user, login, logout }}>
             {isMounted ? children : <div className="opacity-0">{children}</div>}
         </AuthContext.Provider>
     );

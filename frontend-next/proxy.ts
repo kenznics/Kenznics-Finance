@@ -19,5 +19,7 @@ export const config = {
         '/dashboard/:path*',
         '/history/:path*',
         '/input/:path*',
+        '/login',
+        '/register',
     ],
 };

@@ -2,10 +2,10 @@
 
 import { useAuth } from "@/app/context/useAuth";
 import { usePathname, useRouter } from "next/navigation";
-
 import Link from "next/link";
+
 export default function Navbar() {
-    const { logout } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const hiddenRoutes = ['/login', '/', '/register'];
@@ -14,13 +14,20 @@ export default function Navbar() {
         return null;
     }
 
-    const handleLogout = () => {
-        // Eksekusi fungsi logout global menghapus token di state dan local
-        logout();
+    const handleLogout = async () => {
+        try {
+            const response = await fetch("/api/auth/logout", {
+                method: "POST",
+            });
 
-        // Kembalikan user ke laman login
-        router.push("/login")
-    }
+            if (response.ok) {
+                router.push("/login");
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("Gagal melakukkan logout", error);
+        }
+    };
 
     return (
         <nav className="bg-slate-800 text-white px-6 py-4 flex justify-between items-center shadow-md">
@@ -41,6 +48,13 @@ export default function Navbar() {
                     History
                 </Link>
 
+                <div className="flex items-center gap-4">
+                    {user && (
+                        <span className="text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm">
+                            👋 Halo, <span className="font-bold text-white">{user.name || user.email}</span>
+                        </span>
+                    )}
+                </div>
                 <button
                     type="button"
                     onClick={handleLogout}
