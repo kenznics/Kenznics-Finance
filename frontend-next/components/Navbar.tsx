@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Navbar() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const hiddenRoutes = ['/login', '/', '/register'];
@@ -21,6 +21,7 @@ export default function Navbar() {
             });
 
             if (response.ok) {
+                logout();
                 router.push("/login");
                 router.refresh();
             }

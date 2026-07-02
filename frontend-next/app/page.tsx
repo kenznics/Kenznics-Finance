@@ -9,6 +9,7 @@ export default function LandingPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/dashboard");
+      router.refresh();
     }, 2000);
     
     return () => clearTimeout(timer);
