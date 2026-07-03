@@ -66,7 +66,11 @@ export async function POST(request: Request) {
             }
         });
 
-        revalidatePath('/dasboard');
+        if (!title || !amount || !type) {
+            return NextResponse.json({ error: 'Semua kolom transaksi wajib diisi!' }, { status: 400 });
+        }
+
+        revalidatePath('/dashboard');
         revalidatePath('/history');
         revalidatePath('/input');
 

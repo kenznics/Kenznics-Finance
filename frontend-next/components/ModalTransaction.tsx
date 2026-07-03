@@ -78,6 +78,7 @@ export default function ModalTransaction({ isOpen, onClose }: ModalTransactionPr
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
+
             toast.success('Transaksi berhasil disimpan!');
             handleCloseModal();
         },

@@ -69,7 +69,7 @@ export default function DashboardPage() {
         if (transactionList.length === 0) return [];
 
         const chronologicalTransactions = [...transactionList].sort(
-            (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+            (a, b) => new Date(a.createAt || 0).getTime() - new Date(b.createAt || 0).getTime()
         );
 
         // 2. Gunakan .reduce secara mandiri di luar perulangan map
@@ -156,15 +156,6 @@ export default function DashboardPage() {
                                             {t.type === 'INCOME' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
                                         </span>
 
-                                        <span className="text-gray-400 text-xs">
-                                            Saldo: <strong className="text-gray-300">Rp {t.runningBalance.toLocaleString('id-ID')}</strong>
-                                        </span>
-                                    </div>
-
-                                    <div className="flex flex-col sm:items-end gap-1">
-                                        <span className={`font-bold text-sm ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                            {t.type === 'INCOME' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
-                                        </span>
                                         <span className="text-gray-400 text-xs">
                                             Saldo: <strong className="text-gray-300">Rp {t.runningBalance.toLocaleString('id-ID')}</strong>
                                         </span>
