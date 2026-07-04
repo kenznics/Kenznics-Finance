@@ -12,6 +12,11 @@ const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
     // Fungsi Placeholder selama proses SSR di server
 });
 
+const TransactionChart = dynamic(() => import('@/components/TransactionChart'), {
+    ssr: false,
+    loading: () => <div className="w-full h-[300px] bg-gray-900 border border-gray-800 p-6 rounded-2xl animate-pulse" />
+});
+
 interface BackendTransaction {
     id: number;
     title: string;
@@ -52,6 +57,29 @@ export default function DashboardPage() {
             ? transactions
             : resData?.data || resData?.transactions || [];
     }, [transactions]);
+
+    const chartData = useMemo(() => {
+        const monthlyMap: { [key: string]: { name: string; Pemasukkan: number; Pengeluaran: number } } = {};
+
+        transactionList?.forEach((tx) => {
+            if (!tx.createAt) return;
+
+            const date = new Date(tx.createAt);
+            const monthName = date.toLocaleString("id-ID", { month: "short" });
+
+            if (!monthlyMap[monthName]) {
+                monthlyMap[monthName] = { name: monthName, Pemasukkan: 0, Pengeluaran: 0 };
+            }
+
+            if (tx.type === 'INCOME') {
+                monthlyMap[monthName].Pemasukkan += tx.amount;
+            } else if (tx.type === 'EXPENSE') {
+                monthlyMap[monthName].Pengeluaran += tx.amount;
+            }
+        });
+
+        return Object.values(monthlyMap);
+    }, [transactionList]);
 
     const { totalIncome, totalExpense } = useMemo(() => {
         let income = 0;
@@ -121,6 +149,8 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
+                <TransactionChart data={chartData} />
+
                 {/* Kotak Utama: Rincian Aktivitas */}
                 <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full">
                     <div>
@@ -160,6 +190,7 @@ export default function DashboardPage() {
                                             Saldo: <strong className="text-gray-300">Rp {t.runningBalance.toLocaleString('id-ID')}</strong>
                                         </span>
                                     </div>
+
                                 </div>
                             ))
                         )}
