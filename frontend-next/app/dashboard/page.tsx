@@ -22,7 +22,7 @@ interface BackendTransaction {
     title: string;
     type: string;
     amount: number;
-    createdAt?: string;
+    createAt?: string;
 }
 
 interface BackendResponse {
@@ -43,15 +43,17 @@ export default function DashboardPage() {
                 headers: {
                 }
             });
-
             if (!response.ok) throw new Error('Gagal mengambil data');
             return response.json();
         },
+
+        refetchOnWindowFocus: false, // Tidak mengabil data ulang hanya karena kursor berpindah tab
     });
 
     //1. Mengambil List data transaksi mentah 
     const transactionList = useMemo(() => {
         if (!transactions) return [];
+
         const resData = transactions as BackendResponse;
         return Array.isArray(transactions)
             ? transactions
@@ -125,7 +127,7 @@ export default function DashboardPage() {
             <main className="p-6 w-full max-w-4xl mx-auto flex flex-col gap-6 mt-6">
 
                 {/* Ringkasan Saldo Atas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                     <Card
                         title="Total Pemasukkan"
                         amount={`Rp ${totalIncome.toLocaleString('id-ID')}`}
@@ -137,16 +139,12 @@ export default function DashboardPage() {
                         amount={`Rp ${totalExpense.toLocaleString('id-ID')}`}
                         bgColor="bg-rose-50 border-rose-100"
                     />
-                </div>
 
-                <div className="md:col-span-2 flex justify-center w-full">
-                    <div className="w-full md:w-1/2">
-                        <Card
-                            title="Total Sisa Saldo"
-                            amount={`Rp ${(totalIncome - totalExpense).toLocaleString('id-ID')}`}
-                            bgColor="bg-blue-50 border-blue-100"
-                        />
-                    </div>
+                    <Card
+                        title="Total Sisa Saldo"
+                        amount={`Rp ${(totalIncome - totalExpense).toLocaleString('id-ID')}`}
+                        bgColor="bg-blue-50 border-blue-100"
+                    />
                 </div>
 
                 <TransactionChart data={chartData} />
