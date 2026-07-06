@@ -39,20 +39,28 @@ export default function Navbar() {
                     Kenznics Finance
                 </div>
 
-                {/* --- 1. TOMBOL HAMBURGER (Hanya muncul di Layar HP) --- */}
-                <button
-                    type="button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg"
-                >
-                    <svg className="h-6 w-6" fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                        {isMenuOpen ? (
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        ) : (
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        )}
-                    </svg>
-                </button>
+                <div className="flex items-center gap-3">
+                    {user && (
+                        <span className='text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm'>
+                            👋 Halo, <span className='font-bold text-white'>{user.name || user.email}</span>
+                        </span>
+                    )}
+
+                    {/* --- 1. TOMBOL HAMBURGER (Hanya muncul di Layar HP) --- */}
+                    <button
+                        type="button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg"
+                    >
+                        <svg className="h-6 w-6" fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                            {isMenuOpen ? (
+                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            )}
+                        </svg>
+                    </button>
+                </div>
 
                 {/* --- 2. MENU UTAMA LAPTOP (Sekarang menggunakan hidden md:flex) --- */}
                 <div className='hidden md:flex items-center gap-6 text-sm font-medium'>
@@ -67,12 +75,6 @@ export default function Navbar() {
                     <Link href="/history" className='py-2.5 hover:text-indigo-300 transition-colors'>
                         History
                     </Link>
-
-                    {user && (
-                        <span className='text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm'>
-                            👋 Halo, <span className='font-bold text-white'>{user.name || user.email}</span>
-                        </span>
-                    )}
 
                     <button
                         type="button"
