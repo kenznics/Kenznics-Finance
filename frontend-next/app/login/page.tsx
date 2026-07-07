@@ -123,6 +123,12 @@ export default function Login() {
                         </Link>
                     </p>
 
+                    <p className="text-xs text-center text-slate-500 mt-2">
+                        <Link href="/forget-password" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+                            Lupa Kata Sandi?
+                        </Link>
+                    </p>
+
                 </form>
             </div>
         </div >

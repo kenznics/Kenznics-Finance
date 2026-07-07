@@ -9,7 +9,7 @@ export default function Navbar() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
-    const hiddenRoutes = ['/login', '/', '/register'];
+    const hiddenRoutes = ['/login', '/', '/register', '/reset-password', '/forget-password'];
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
     if (hiddenRoutes.includes(pathname)) {
@@ -41,7 +41,7 @@ export default function Navbar() {
 
                 <div className="flex items-center gap-3">
                     {user && (
-                        <span className='text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm'>
+                        <span className='md:hidden text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm'>
                             👋 Halo, <span className='font-bold text-white'>{user.name || user.email}</span>
                         </span>
                     )}
@@ -64,6 +64,13 @@ export default function Navbar() {
 
                 {/* --- 2. MENU UTAMA LAPTOP (Sekarang menggunakan hidden md:flex) --- */}
                 <div className='hidden md:flex items-center gap-6 text-sm font-medium'>
+
+                    {user && (
+                        <span className='text-sm font-medium text-indigo-200 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600 shadow-sm'>
+                            👋 Halo, <span className='font-bold text-white'>{user.name || user.email}</span>
+                        </span>
+                    )}
+
                     <Link href="/dashboard" className='py-2.5 hover:text-indigo-300 transition-colors'>
                         Dashboard
                     </Link>
@@ -108,12 +115,6 @@ export default function Navbar() {
                     >
                         History
                     </Link>
-
-                    {user && (
-                        <div className="text-sm font-medium text-indigo-200 py-1">
-                            👋 Halo, <span className='font-bold text-white'>{user.name || user.email}</span>
-                        </div>
-                    )}
 
                     <button
                         type="button"
