@@ -1,6 +1,6 @@
 "use client"; // Menandakan file ini adalah Client Component
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Card from '@/components/Card';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
@@ -60,19 +60,36 @@ export default function DashboardPage() {
             : resData?.data || resData?.transactions || [];
     }, [transactions]);
 
+    const [filterRange, setFilterRange] = useState<string>('all');
+
     const chartData = useMemo(() => {
         const monthlyMap: { [key: string]: { name: string; Pemasukkan: number; Pengeluaran: number } } = {};
 
         transactionList?.forEach((tx) => {
             if (!tx.createAt) return;
 
+            // block filter waktu
             const date = new Date(tx.createAt);
-            const monthName = date.toLocaleString("id-ID", { month: "short" });
+            const kini = new Date();
+
+            if (filterRange === 'month') {
+                // Filter hanya bulan dan tahun ini
+                if (date.getMonth() !== kini.getMonth() || date.getFullYear() !== kini.getFullYear()) return;
+            } else if (filterRange === '3months') {
+                // Filter 3 bulan kebelakang 90 hari
+                const batasTigaBulan = new Date();
+                batasTigaBulan.setDate(kini.getDate() - 90);
+                if (date < batasTigaBulan) return;
+            } else if (filterRange === 'year') {
+                // Filter hanya tahun ini
+                if (date.getFullYear() !== kini.getFullYear()) return;
+            }
+
+            const monthName = date.toLocaleString("id-ID", { month: "short" })
 
             if (!monthlyMap[monthName]) {
                 monthlyMap[monthName] = { name: monthName, Pemasukkan: 0, Pengeluaran: 0 };
             }
-
             if (tx.type === 'INCOME') {
                 monthlyMap[monthName].Pemasukkan += tx.amount;
             } else if (tx.type === 'EXPENSE') {
@@ -81,7 +98,7 @@ export default function DashboardPage() {
         });
 
         return Object.values(monthlyMap);
-    }, [transactionList]);
+    }, [transactionList, filterRange]);
 
     const { totalIncome, totalExpense } = useMemo(() => {
         let income = 0;
@@ -145,6 +162,27 @@ export default function DashboardPage() {
                         amount={`Rp ${(totalIncome - totalExpense).toLocaleString('id-ID')}`}
                         bgColor="bg-blue-50 border-blue-100"
                     />
+                </div>
+
+                <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Tren Keuangan</h3>
+                            <p className="text-gray-400 text-xs mt-1">Visual perputaran arus kas masuk dan keluar</p>
+                        </div>
+
+                        <select
+                            value={filterRange}
+                            onChange={(e) => setFilterRange(e.target.value)}
+                            className="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-xl px-4 
+                            py-2.5 outline-none focus:border-blue-500 cursor-pointer min-w-[150px]"
+                        >
+                            <option value="all">Semua Waktu</option>
+                            <option value="month">Bulan Ini</option>
+                            <option value="3month">3 Bulan Terakhir</option>
+                            <option value="year">Tahun Ini</option>
+                        </select>
+                    </div>
                 </div>
 
                 <TransactionChart data={chartData} />
