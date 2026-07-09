@@ -4,13 +4,16 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic'
+
 interface MyJWTPayLoad {
     userId?: number;
     id?: number;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        // Otentikasi token JWT 
         const cookieStore = await cookies();
         const token = cookieStore.get('authToken')?.value;
 
@@ -21,10 +24,30 @@ export async function GET() {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'KenzNik500.') as MyJWTPayLoad;
         const loggedInUserId = decoded.userId || decoded.id;
 
-        // Mengambil data transaski lewat DB dengan prisma ORM v7
+        // Ambil query params dari URL request frontend
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const search = searchParams.get('search') || '';
+
+        // Batasan data per halaman
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        // Modfikasi kueri Prisma findMany
         const transactions = await prisma.transaction.findMany({
-            where: { userId: loggedInUserId },
-            orderBy: { createAt: 'desc' }
+            where: {
+                userId: loggedInUserId,
+                // filter pencarian kata kunci jika user mengetik sesuatu
+                title: {
+                    contains: search.trim(),
+                    mode: 'insensitive' // Mengabaikan huruf besar/kecil saat mencari kata
+                }
+            },
+            orderBy: {
+                createAt: 'desc'
+            },
+            skip: skip,
+            take: limit
         });
 
         return NextResponse.json(transactions, { status: 200 });
@@ -51,7 +74,7 @@ export async function POST(request: Request) {
         const loggedInUserId = decoded.userId || decoded.id;
 
         if (!loggedInUserId) {
-            return NextResponse.json({ error: 'Pengguna tidak valid atau tidak dikenali'}, { status: 401 });
+            return NextResponse.json({ error: 'Pengguna tidak valid atau tidak dikenali' }, { status: 401 });
         }
 
         const body = await request.json();
