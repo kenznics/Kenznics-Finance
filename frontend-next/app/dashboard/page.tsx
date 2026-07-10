@@ -5,6 +5,8 @@ import Card from '@/components/Card';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
     ssr: false, // Next.js akan merender komponen ini di browser
@@ -137,6 +139,60 @@ export default function DashboardPage() {
         return [...transactionWithBalance].reverse();
     }, [transactionList]);
 
+    const handleExportPDF = async () => {
+        // Instalasi dokumen PDF baru (ukuran A4, vertikal)
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const { default: autoTable } = await import('jspdf-autotable');
+
+        // Desain Header Judul Laporan Finansial
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(29, 78, 216); // warna biru
+        doc.text('Kenznics Finance - Laporan Transaksi', 14, 20);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139); // warna abu-abu
+        doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 26);
+
+        // Baris data tabel dari array LatestTransactions
+        const tableBody = latestTransactions.map((tx: { title: string; type: string; amount: number; runningBalance: number; createAt?: string; }, index: number) => {
+            const tanggalStr = tx.createAt
+                ? new Date(tx.createAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '-';
+
+            return [
+                index + 1,
+                tx.title || 'Tanpa Judul',
+                tx.type === 'INCOME' ? 'Pemasukkan' : 'Pengeluaran',
+                `Rp ${tx.amount.toLocaleString('id-ID')}`,
+                `Rp ${tx.runningBalance.toLocaleString('id-ID')}`,
+                tanggalStr
+            ];
+        });
+
+        autoTable(doc, {
+            startY: 32,
+            head: [['No', 'Judul Transaksi', 'Tipe', 'Jumlah', 'Saldo Berjalan', 'Tanggal']],
+            body: tableBody,
+            headStyles: { fillColor: [29, 78, 216], textColor: [255, 255, 255], fontStyle: 'bold' },
+            styles: { font: 'helvetica', fontSize: 9 },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                3: { halign: 'right' },
+                4: { halign: 'right' }
+            }
+        });
+
+        // Unduh file PDF secara otomatis ke komputer user
+        doc.save(`Laporan_Keuangan_Kenznics_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
     if (isLoading) return <SkeletonTable />
 
     return (
@@ -187,15 +243,27 @@ export default function DashboardPage() {
 
                 <TransactionChart data={chartData} />
 
-                {/* Kotak Utama: Rincian Aktivitas */}
-                <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full">
-                    <div>
-                        <h3 className="text-lg font-bold text-white">Rincian Aktivitas Transaksi</h3>
-                        <p className="text-gray-400 text-xs mt-1">Log perubahan saldo berdasarkan waktu transaksi</p>
+                <div className="bg-gray-900 border-gray-800 p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full">
+                    {/* Kotak Utama: Rincian Aktivitas */}
+                    <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full">
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Rincian Aktivitas Transaksi</h3>
+                            <p className="text-gray-400 text-xs mt-1">Log perubahan saldo berdasarkan waktu transaksi</p>
+                        </div>
+
+                        {/* Ekspor PDF */}
+                        <button
+                            onClick={handleExportPDF}
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r form-blue-600 to-indigo-600 hover:to-blue-500
+                        hover:to-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md shadow-blue-900/20 transition-all cursor-pointer
+                        white-nowrap self-start sm:self-auto"
+                        >
+                            📥 Ekspor PDF
+                        </button>
                     </div>
 
-
                     <div className='flex flex-col gap-3 max-h-75 overflow-y-auto pr-1'>
+
                         {latestTransactions.length === 0 ? (
                             <p className="text-gray-500 text-sm text-center py-4">Belum ada Riwayat Transaksi.</p>
                         ) : (
