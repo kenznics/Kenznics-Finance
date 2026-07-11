@@ -67,7 +67,36 @@ export default function HistoryPage() {
     });
 
     const handleDelete = (id: number) => {
-        deleteMutation.mutate(id);
+        toast((t) => (
+            <div className="flex flex-col gap-3 p-1">
+                <p className="text-sm font-medium text-slate-800">
+                    Apakah Anda yakin menghapus transaksi ini?
+                </p>
+
+                <div className="flex items-center justify-end gap-2">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-rose-500 
+                        rounded-lg transition-colors hover:text-white cursor-pointer"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            deleteMutation.mutate(id);
+                        }}
+                        className="px-3 py-1.5 text-xs font-bold text-white bg-rose-500 hover:bg-emerald-400 
+                    rounded-lg transition-colors shadow-sm cursor-pointer"
+                    >
+                        Ya, Hapus
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: Infinity, // Menjaga toast tetap terbuka sampai user memilih tindakan
+            position: 'top-center',
+        });
     };
 
     if (isLoading) {
@@ -80,9 +109,16 @@ export default function HistoryPage() {
     }
 
     const resData = transactions as BackendReponse | undefined;
-    const transactionList = Array.isArray(transactions)
+    const rawList = Array.isArray(transactions)
         ? transactions
         : resData?.data || resData?.transactions || [];
+
+    // Mengambil hanya 5 data teratas di tabel
+    const transactionList = rawList.slice(0, 5);
+
+    // Menyimpan indikator apakah database mengembalikan data ke-6 (artinya halaman berikutnya terisi minimal 1 data)
+    const hasNextPage = rawList.length > 5;
+
 
     return (
         <Suspense fallback={<SkeletonTable />}>
@@ -218,7 +254,7 @@ export default function HistoryPage() {
                             </span>
 
                             <button
-                                disabled={transactionList.length < 5}
+                                disabled={!hasNextPage}
                                 onClick={() => setPage((prev) => prev + 1)}
                                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold 
                                 px-4 py-2.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
@@ -226,7 +262,6 @@ export default function HistoryPage() {
                                 Selanjutnya →
                             </button>
                         </div>
-
                     </div>
 
                 </main>

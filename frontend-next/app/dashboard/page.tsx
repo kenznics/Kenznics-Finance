@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { array } from 'zod';
 
 const SkeletonTable = dynamic(() => import('@/components/SkeletonTable'), {
     ssr: false, // Next.js akan merender komponen ini di browser
@@ -140,57 +141,91 @@ export default function DashboardPage() {
     }, [transactionList]);
 
     const handleExportPDF = async () => {
-        // Instalasi dokumen PDF baru (ukuran A4, vertikal)
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+        try {
+            const response = await fetch('/api/transactions?page=1&limit=all&search=');
+            const json = await response.json();
 
-        const { default: autoTable } = await import('jspdf-autotable');
+            const allTransactions = Array.isArray(json)
+                ? json
+                : json.data || json.transactions || [];
 
-        // Desain Header Judul Laporan Finansial
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.setTextColor(29, 78, 216); // warna biru
-        doc.text('Kenznics Finance - Laporan Transaksi', 14, 20);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139); // warna abu-abu
-        doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 26);
-
-        // Baris data tabel dari array LatestTransactions
-        const tableBody = latestTransactions.map((tx: { title: string; type: string; amount: number; runningBalance: number; createAt?: string; }, index: number) => {
-            const tanggalStr = tx.createAt
-                ? new Date(tx.createAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
-                : '-';
-
-            return [
-                index + 1,
-                tx.title || 'Tanpa Judul',
-                tx.type === 'INCOME' ? 'Pemasukkan' : 'Pengeluaran',
-                `Rp ${tx.amount.toLocaleString('id-ID')}`,
-                `Rp ${tx.runningBalance.toLocaleString('id-ID')}`,
-                tanggalStr
-            ];
-        });
-
-        autoTable(doc, {
-            startY: 32,
-            head: [['No', 'Judul Transaksi', 'Tipe', 'Jumlah', 'Saldo Berjalan', 'Tanggal']],
-            body: tableBody,
-            headStyles: { fillColor: [29, 78, 216], textColor: [255, 255, 255], fontStyle: 'bold' },
-            styles: { font: 'helvetica', fontSize: 9 },
-            columnStyles: {
-                0: { halign: 'center', cellWidth: 10 },
-                3: { halign: 'right' },
-                4: { halign: 'right' }
+            if (!Array.isArray(allTransactions) || allTransactions.length === 0) {
+                alert('Tidak ada data transaksi yang dapat diekspor.');
+                return;
             }
-        });
 
-        // Unduh file PDF secara otomatis ke komputer user
-        doc.save(`Laporan_Keuangan_Kenznics_${new Date().toISOString().split('T')[0]}.pdf`);
+            // Instalasi dokumen PDF baru (ukuran A4, vertikal)
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const { default: autoTable } = await import('jspdf-autotable');
+
+            // Desain Header Judul Laporan Finansial
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(29, 78, 216); // warna biru
+            doc.text('Kenznics Finance - Laporan Transaksi', 14, 20);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139); // warna abu-abu
+            doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 26);
+
+            const chronologicalTx = [...(allTransactions || [])].sort(
+                (a, b) => new Date(a.createAt || 0).getTime() - new Date(b.createAt || 0).getTime()
+            );
+
+            let saldoAkumulasi = 0;
+
+            // Baris data tabel dari array LatestTransactions
+            const tableBody = chronologicalTx.map((tx: { title: string; type: string; amount: number; runningBalance: number; createAt?: string; }, index: number) => {
+                if (tx.type === 'INCOME') {
+                    saldoAkumulasi += tx.amount;
+                } else if (tx.type === 'EXPENSE') {
+                    saldoAkumulasi -= tx.amount;
+                }
+
+                const tanggalStr = tx.createAt
+                    ? new Date(tx.createAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : '-';
+
+                return [
+                    index + 1,
+                    tx.title || 'Tanpa Judul',
+                    tx.type === 'INCOME' ? 'Pemasukkan' : 'Pengeluaran',
+                    `Rp ${tx.amount.toLocaleString('id-ID')}`,
+                    `Rp ${saldoAkumulasi.toLocaleString('id-ID')}`,
+                    tanggalStr
+                ];
+            });
+
+            tableBody.reverse();
+
+            tableBody.forEach((row, idx) => {
+                row[0] = idx + 1;
+            });
+
+            autoTable(doc, {
+                startY: 32,
+                head: [['No', 'Judul Transaksi', 'Tipe', 'Jumlah', 'Saldo Berjalan', 'Tanggal']],
+                body: tableBody,
+                headStyles: { fillColor: [29, 78, 216], textColor: [255, 255, 255], fontStyle: 'bold' },
+                styles: { font: 'helvetica', fontSize: 9 },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 10 },
+                    3: { halign: 'right' },
+                    4: { halign: 'right' }
+                }
+            });
+
+            doc.save(`Laporan_Keuangan_Kenznics_${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch (err) {
+            console.error('Gagal mengekspor laporan:', err);
+            alert('Terjadi kesalahan saat memproses unduhan PDF.');
+        }
     };
 
     if (isLoading) return <SkeletonTable />

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -30,25 +31,29 @@ export async function GET(request: Request) {
         const search = searchParams.get('search') || '';
 
         // Batasan data per halaman
-        const limit = 5;
-        const skip = (page - 1) * limit;
+        const limitParam = searchParams.get('limit') || '5';
 
-        // Modfikasi kueri Prisma findMany
-        const transactions = await prisma.transaction.findMany({
+        const queryOptions: Prisma.TransactionFindManyArgs = {
             where: {
                 userId: loggedInUserId,
-                // filter pencarian kata kunci jika user mengetik sesuatu
                 title: {
                     contains: search.trim(),
-                    mode: 'insensitive' // Mengabaikan huruf besar/kecil saat mencari kata
+                    mode: 'insensitive'
                 }
             },
             orderBy: {
                 createAt: 'desc'
-            },
-            skip: skip,
-            take: limit
-        });
+            }
+        };
+
+        // SINKRONISASI TANPA BATAS: Jika frontend mengirim 'all', jangan pasang skip & take!
+        if (limitParam !== 'all') {
+            const limit = parseInt(limitParam);
+            queryOptions.skip = (page - 1) * limit;
+            queryOptions.take = limit + 1; // Tetap amankan fitur lock pagination halaman biasa
+        }
+
+        const transactions = await prisma.transaction.findMany(queryOptions);
 
         return NextResponse.json(transactions, { status: 200 });
 

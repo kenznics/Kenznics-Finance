@@ -17,6 +17,7 @@ export async function DELETE(
         const { id } = await params;
         const transactionId = parseInt(id);
 
+        // Validasi ID
         if (isNaN(transactionId)) {
             return NextResponse.json({ error: 'ID transaksi tidak valid' }, { status: 400 });
         }
@@ -35,6 +36,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Pengguna tidak valid atau tidak dikenali' }, { status: 401 });
         }
 
+        // Validasi Eksitensi
         const existingTransaction = await prisma.transaction.findUnique({
             where: { id: transactionId }
         });
@@ -43,6 +45,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Transaksi tidak ditemukan' }, { status: 404 });
         }
 
+        // Validasi Kepemilikan (Auhorization)
         if (existingTransaction.userId !== loggedInUserId) {
             return NextResponse.json({ error: 'Anda tidak memiliki hak akses untuk menghapus transaksi ini' }, { status: 403 });
         }
