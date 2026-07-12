@@ -1,0 +1,24 @@
+Instalasi template Vite
+# 1. Inisialisasi proyek Vite dengan template TypeScript (Gunakan titik '.' agar terpasang langsung di dalam folder frontend)
+npm create vite@latest . -- --template vanilla-ts
+
+# 2. Instal semua dependensi awal yang diunduh Vite
+npm install
+
+Instalasi Tailwind
+# 1. Instal Tailwind CSS dan alat bantu konfigurasinya
+npm install -D tailwindcss postcss autoprefixer
+
+# 2. Buat file konfigurasi (secara default Vite Vanilla TS mendukung file config bertipe .ts atau .js)
+npx tailwindcss init -p
+// Solusi kalo ini ga bisa
+# 1. Hapus instalasi v4 yang tidak sengaja terpasang tadi
+npm uninstall tailwindcss postcss autoprefixer
+
+# 2. Pasang kembali dengan mengunci versi ke Tailwind v3
+npm install -D tailwindcss@3 postcss autoprefixer
+
+# 3. Sekarang jalankan ulang perintah inisialisasi konfigurasi
+npx tailwindcss init -pa
+
+(Gunakan 2 extensi ini Tailwind CSS Intellisense dan inline HTML)
