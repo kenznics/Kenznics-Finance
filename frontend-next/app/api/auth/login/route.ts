@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         }
 
         // 4. Token JWT
-        const secretKey = process.env.JWT_SECRET || 'KenzNik500.';
+        const secretKey = process.env.JWT_SECRET!;
         const token = jwt.sign(
             { userId: user.id },
             secretKey,
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
             message: 'Login sukses!',
             user: { id: user.id, email: user.email }
         }, { status: 200 });
- 
+
     } catch (error) {
         console.error("Gagal memproses login Route Handle", error);
         return NextResponse.json(

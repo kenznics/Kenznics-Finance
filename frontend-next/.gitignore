@@ -9,6 +9,7 @@ build/
 # File konfigurasi rahasia (Berisi password database Neon Cloud Anda)
 .env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
