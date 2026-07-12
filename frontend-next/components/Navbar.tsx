@@ -9,10 +9,13 @@ export default function Navbar() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
-    const hiddenRoutes = ['/login', '/', '/register', '/reset-password', '/forget-password'];
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-    if (hiddenRoutes.includes(pathname)) {
+    const hiddenRoutes: string[] = ['/login', '/', '/register', '/reset-password', '/forget-password'];
+    const isHidden = hiddenRoutes.some((route: string) => pathname?.startsWith(route));
+
+    // 3. Pastikan nama variabel di sini sama persis (isHidden)
+    if (isHidden) {
         return null;
     }
 
