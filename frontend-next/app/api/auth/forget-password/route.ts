@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
         // 2. Rakit tautan lengkap menggunakan token acak yang sudah dibuat di atas
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-        const resetLink = `${baseUrl}/reset_password?token=${resetToken}`;
+        const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
         // 3. Kirim email asli menggunakan variabel tautan yang benar
         await resend.emails.send({
