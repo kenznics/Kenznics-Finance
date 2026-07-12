@@ -34,7 +34,8 @@ export async function POST(request: Request) {
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         // 2. Rakit tautan lengkap menggunakan token acak yang sudah dibuat di atas
-        const resetLink = `http://localhost:3001/reset-password?token=${resetToken}`;
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+        const resetLink = `${baseUrl}/reset_password?token=${resetToken}`;
 
         // 3. Kirim email asli menggunakan variabel tautan yang benar
         await resend.emails.send({
