@@ -9,12 +9,10 @@ export default function Navbar() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const hiddenRoutes = ['/login', '/', '/register', '/reset-password', '/forget-password'];
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-    const hiddenRoutes = ['/', '/login', '/register', '/reset-password', '/forget-password'];
-    const isHidden = hiddenRoutes.some((route) => pathname?.includes(route));
-
-    if (isHidden) {
+    if (hiddenRoutes.includes(pathname)) {
         return null;
     }
 
