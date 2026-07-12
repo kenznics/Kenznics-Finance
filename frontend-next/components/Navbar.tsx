@@ -11,10 +11,13 @@ export default function Navbar() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-    const hiddenRoutes: string[] = ['/login', '/', '/register', '/reset-password', '/forget-password'];
-    const isHidden = hiddenRoutes.some((route: string) => pathname?.startsWith(route));
+    // 1. Keluarkan '/' dari array agar tidak memicu 'startsWith' ke semua rute
+    const hiddenRoutes: string[] = ['/login', '/register', '/reset-password', '/forget-password'];
 
-    // 3. Pastikan nama variabel di sini sama persis (isHidden)
+    // 2. Cek apakah pathname sama persis dengan '/' ATAU diawali dengan rute tersembunyi lainnya
+    const isHidden = pathname === '/' || hiddenRoutes.some((route: string) => pathname?.startsWith(route));
+
+    // 3. Jika cocok, navbar tidak akan muncul
     if (isHidden) {
         return null;
     }
