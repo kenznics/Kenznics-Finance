@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -9,7 +9,6 @@ import { Suspense } from 'react';
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-
     // Ambil token rahasia dari URL string (?token=XYZ)
     const token = searchParams.get('token');
 
@@ -17,6 +16,22 @@ function ResetPasswordContent() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+
+    if (!token) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
+                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm w-full max-w-md text-center">
+                    <h2 className="text-lg font-bold text-rose-600 mb-2">Tautan Tidak Valid</h2>
+                    <p className="text-xs text-slate-500 mb-4">
+                        Tautan reset kata sandi ini tidak valid, sudah kedaluwarsa, atau tidak ditemukan di dalam URL.
+                    </p>
+                    <Link href="/forget-password" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold inline-block transition-colors">
+                        Minta Tautan Baru
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

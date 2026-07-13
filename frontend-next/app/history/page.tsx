@@ -31,7 +31,7 @@ export default function HistoryPage() {
 
     const queryClient = useQueryClient();
 
-    const { data: transactions, isLoading } = useQuery({
+    const { data: transactions, isLoading, isPlaceholderData } = useQuery({
         queryKey: ['transactions', page, debounceSearch],
         queryFn: async () => {
             const response = await fetch(`/api/transactions?page=${page}&search=${encodeURIComponent(debounceSearch.trim())}`);
@@ -241,10 +241,10 @@ export default function HistoryPage() {
                         {/* Navigasi Pembagian Halaman */}
                         <div className="flex items-center justify-between w-full mt-2">
                             <button
-                                disabled={page === 1}
+                                disabled={page === 1 || isPlaceholderData}
                                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                                className="bg-slate-100 hover:bg-slate-200 disable:opacity-40 disable:hover:bg-slate-100 
-                                text-slate-700 text=xs font-bold px-4 py-2.5 rounded-xl border border-slate-200 transition-all cursor-pointer disable:cursor-not-allowed"
+                                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 
+                                text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-200 transition-all cursor-pointer disabled:cursor-not-allowed"
                             >
                                 ← Sebelumnya
                             </button>
@@ -254,7 +254,7 @@ export default function HistoryPage() {
                             </span>
 
                             <button
-                                disabled={!hasNextPage}
+                                disabled={!hasNextPage || isPlaceholderData}
                                 onClick={() => setPage((prev) => prev + 1)}
                                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold 
                                 px-4 py-2.5 rounded-xl border border-slate-200 transition-all cursor-pointer"
@@ -265,7 +265,6 @@ export default function HistoryPage() {
                     </div>
 
                 </main>
-                <Toaster position="top-center" reverseOrder={false} containerStyle={{ zIndex: 9999 }} />
             </div >
         </Suspense>
     );
