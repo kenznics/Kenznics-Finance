@@ -1,0 +1,26 @@
+node_modules
+# Keep environment variables out of version control
+
+# Hasil kompilasi Next.js (Folder cache yang sempat kita hapus tadi)
+.next/
+out/
+build/
+
+# File konfigurasi rahasia (Berisi password database Neon Cloud Anda)
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log kesalahan sistem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Folder sistem operasi
+.DS_Store
+Thumbs.db
+
+/generated/prisma
